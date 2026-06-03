@@ -1,0 +1,4 @@
+- page: index.md
+  label: Start here
+- page: style-guide.md
+- page: about.md
