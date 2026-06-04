@@ -5,4 +5,19 @@ export const tags: Record<string, MarkdocTagSchema> = {
     render: 'GsapHello',
     selfClosing: true,
   },
+  br: {
+    render: 'Break',
+    selfClosing: true,
+  },
+  quiz: {
+    attributes: {
+      title: { type: String },
+      summary: { type: String },
+      questions: {
+        type: 'Object',
+        required: true,
+      },
+    },
+    render: 'Quiz',
+  },
 };

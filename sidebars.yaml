@@ -6,3 +6,6 @@
   label: GSAP Demo
 - group: Museum API
   page: apis/openapi.yaml
+- group: Markdoc
+  page: survey.md
+  label: Survey
