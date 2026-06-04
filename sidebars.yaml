@@ -2,5 +2,7 @@
   label: Start here
 - page: style-guide.md
 - page: about.md
+- page: gsap-demo.md
+  label: GSAP Demo
 - group: Museum API
   page: apis/openapi.yaml
