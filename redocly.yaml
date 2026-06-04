@@ -1,6 +1,114 @@
 logo:
   image: ./images/logo.png
 
+# Role-Based Access Control (RBAC)
+# Roles: business, internal, developers, ai-agents
+# Permissions: read (can view) | none (no access, page is hidden and blocked)
+rbac:
+  defaults:
+    anonymous: none
+    authenticated: read
+  content:
+    # Root-level pages: all authenticated users
+    'index.md':
+      anonymous: read
+      business: read
+      internal: read
+      developers: read
+      ai-agents: read
+    'about.md':
+      anonymous: read
+      business: read
+      internal: read
+      developers: read
+      ai-agents: read
+    # Style guide: internal team and developers only
+    'style-guide.md':
+      business: none
+      internal: read
+      developers: read
+      ai-agents: none
+    # Business section: business + internal + developers
+    'business/**':
+      anonymous: none
+      business: read
+      internal: read
+      developers: read
+      ai-agents: none
+    # Internal section: internal + developers only
+    'internal/**':
+      anonymous: none
+      business: none
+      internal: read
+      developers: read
+      ai-agents: none
+    # Developers section: developers + internal + ai-agents (API consumers)
+    'developers/**':
+      anonymous: none
+      business: none
+      internal: read
+      developers: read
+      ai-agents: read
+    # AI Agents section: ai-agents + developers + internal
+    'ai-agents/**':
+      anonymous: none
+      business: none
+      internal: read
+      developers: read
+      ai-agents: read
+    # API reference: developers, internal, and ai-agents only
+    'apis/**':
+      anonymous: none
+      business: none
+      internal: read
+      developers: read
+      ai-agents: read
+
+navbar:
+  items:
+    - label: Home
+      href: /
+    - label: Business
+      href: /business/
+      rbac:
+        business: read
+        internal: read
+        developers: read
+        ai-agents: none
+        anonymous: none
+    - label: Internal
+      href: /internal/
+      rbac:
+        business: none
+        internal: read
+        developers: read
+        ai-agents: none
+        anonymous: none
+    - label: Developers
+      href: /developers/
+      rbac:
+        business: none
+        internal: read
+        developers: read
+        ai-agents: read
+        anonymous: none
+    - label: AI Agents
+      href: /ai-agents/
+      rbac:
+        business: none
+        internal: read
+        developers: read
+        ai-agents: read
+        anonymous: none
+    - label: API Reference
+      href: /apis/openapi.yaml
+      rbac:
+        business: none
+        internal: read
+        developers: read
+        ai-agents: read
+        anonymous: none
+
 footer:
   items:
     - group: Redocly
