@@ -12,3 +12,6 @@
   - separatorLine: true
     page: survey.md
     label: Markdoc Quiz Sample
+  - separatorLine: true
+    page: video-demo.md
+    label: Video Sample

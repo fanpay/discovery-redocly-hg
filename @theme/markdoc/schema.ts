@@ -20,4 +20,12 @@ export const tags: Record<string, MarkdocTagSchema> = {
     },
     render: 'Quiz',
   },
+  video: {
+    render: 'Video',
+    attributes: {
+      src: { type: String, required: true },
+      title: { type: String },
+      width: { type: String, default: '100%' },
+    },
+  },
 };
