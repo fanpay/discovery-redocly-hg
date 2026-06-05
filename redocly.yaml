@@ -15,3 +15,8 @@ footer:
           label: Markdoc
         - href: https://openapis.org
           label: OpenAPI
+aiAssistant:
+  trigger:
+    hide: true
+    inputType: button
+    inputIcon: redocly
