@@ -5,8 +5,7 @@
 - group: Museum API
   page: apis/museum.yaml
 - group: Discovery API
-  pages:
-    - page: apis/test.yaml
+  page: apis/test.yaml
 - group: Advanced components
   icon: book
   items:
