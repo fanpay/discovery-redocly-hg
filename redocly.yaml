@@ -1,6 +1,7 @@
 logo:
   image: ./images/logo.png
-
+seo:
+  siteUrl: https://testing-redocly-local.redocly.app/
 footer:
   items:
     - group: Redocly
