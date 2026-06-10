@@ -4,8 +4,10 @@
 - page: about.md
 - group: Museum API
   page: apis/museum.yaml
-- group: Discovery API
+- group: Python Project - Discovery API
   page: apis/test.yaml
+- group: NodeJS Project - Discovery API
+  page: apis/node-project.yaml
 - group: Advanced components
   icon: book
   items:
