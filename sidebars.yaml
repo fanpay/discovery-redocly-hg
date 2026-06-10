@@ -3,7 +3,11 @@
 - page: style-guide.md
 - page: about.md
 - group: Museum API
-  page: apis/openapi.yaml
+  page: apis/museum.yaml
+- group: Python Project - Discovery API
+  page: apis/test.yaml
+- group: NodeJS Project - Discovery API
+  page: apis/node-project.yaml
 - group: Advanced components
   icon: book
   items:
