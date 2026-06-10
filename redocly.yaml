@@ -2,6 +2,16 @@ logo:
   image: ./images/logo.png
 seo:
   siteUrl: https://testing-redocly-local.redocly.app/
+  llmstxt:
+    # Points to a specific markdown file that gives the AI system-level instructions
+    details: 
+      path: "./llms-details.md"
+    # Exclude internal or draft content from being indexed by AI
+    # Group your content logically for the AI
+    sections:
+      - title: "About"
+        includeFiles:
+          - "about.md"
 footer:
   items:
     - group: Redocly
