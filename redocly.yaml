@@ -20,3 +20,11 @@ aiAssistant:
     hide: true
     inputType: button
     inputIcon: redocly
+
+mcp:
+  hide: false
+  docs:
+    hide: false
+    name: "Museum API Docs"
+    ignore:
+      - style-guide.md

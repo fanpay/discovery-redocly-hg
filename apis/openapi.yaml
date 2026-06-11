@@ -1,3 +1,19 @@
+x-mcp:
+  protocolVersion: "2024-11-05"
+  capabilities:
+    tools: {}
+  tools:
+    - name: getMuseumHours
+      description: Get upcoming museum operating hours for a given date range.
+    - name: listSpecialEvents
+      description: List all upcoming special events at the museum.
+    - name: getSpecialEvent
+      description: Get full details about a specific special event by its ID.
+    - name: buyMuseumTickets
+      description: Purchase general admission or special event tickets for the museum.
+    - name: getTicketCode
+      description: Retrieve the QR code image for a purchased ticket.
+
 openapi: 3.1.0
 info:
   title: Redocly Museum API

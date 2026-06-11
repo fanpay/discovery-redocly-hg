@@ -2,5 +2,7 @@
   label: Start here
 - page: style-guide.md
 - page: about.md
+- page: mcp-connect.md
+  label: Connect with AI
 - group: Museum API
   page: apis/openapi.yaml

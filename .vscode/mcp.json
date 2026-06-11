@@ -1,0 +1,9 @@
+{
+	"servers": {
+		"Museum API Docs": {
+			"url": "https://testing-redocly-local.redocly.app/mcp",
+			"type": "http"
+		}
+	},
+	"inputs": []
+}
