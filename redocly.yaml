@@ -15,6 +15,10 @@ footer:
           label: Markdoc
         - href: https://openapis.org
           label: OpenAPI
+markdown:
+  template:
+    'blog/**': './@theme/Templates/BlogPost'
+
 aiAssistant:
   trigger:
     hide: true

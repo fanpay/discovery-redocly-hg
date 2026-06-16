@@ -2,5 +2,7 @@
   label: Start here
 - page: style-guide.md
 - page: about.md
+- page: blog/getting-started-with-apis.md
+  label: Blog Post
 - group: Museum API
   page: apis/openapi.yaml
