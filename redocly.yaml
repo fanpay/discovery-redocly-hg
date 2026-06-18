@@ -31,7 +31,9 @@ mcp:
 # NOTE: scorecardClassic requires a paid Redocly project (Pro/Enterprise) and
 # authentication. Verify the level/ruleset syntax against the live
 # `configure-scorecard` guide before relying on it in CI.
+
 scorecardClassic:
+  fromProjectUrl: https://app.cloud.redocly.com/org/fabian-payan/project/testing-redocly-local
   levels:
     - name: Baseline
       extends:
