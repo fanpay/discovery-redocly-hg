@@ -15,7 +15,6 @@ footer:
 # Define environment-specific overrides
 env:
   development:
-    envName: development
     aiAssistant:
       trigger:
         hide: false # Show assistant in dev
@@ -24,9 +23,7 @@ env:
         x-servers-override:
           - url: "https://dev-api.museum.example.com/v1"
             description: Development server
-  
   qa:
-    envName: qa
     apis:
       museum@v1:
         x-servers-override:
@@ -43,4 +40,3 @@ apis:
     x-servers-override:
       - url: "https://api.museum.example.com/v1"
         description: Production server
-envName: production
