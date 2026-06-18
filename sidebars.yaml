@@ -1,6 +1,0 @@
-- page: index.md
-  label: Start here
-- page: style-guide.md
-- page: about.md
-- group: Museum API
-  page: apis/openapi.yaml

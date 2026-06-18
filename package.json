@@ -1,0 +1,14 @@
+{
+  "name": "deluxe-ms-api-docs",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Agent-ready API documentation platform built on Redocly.",
+  "scripts": {
+    "lint": "redocly lint",
+    "scorecard": "redocly scorecard-classic --target-level Agent-Ready --format junit",
+    "preview": "redocly preview"
+  },
+  "devDependencies": {
+    "@redocly/cli": "^2.34.0"
+  }
+}

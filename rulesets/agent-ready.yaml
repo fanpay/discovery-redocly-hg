@@ -1,0 +1,51 @@
+# =============================================================================
+# Agent-Ready ruleset
+# =============================================================================
+# The single definition of our documentation quality bar. A spec that passes
+# this is clean enough for an autonomous AI agent to integrate against with no
+# human spec-reading — which makes it precise enough for developers too.
+#
+# Referenced in exactly one place each:
+#   - root redocly.yaml `extends`        -> day-to-day `redocly lint`
+#   - scorecardClassic `Agent-Ready` lvl -> the publish gate
+# Edit the bar HERE; both consumers pick it up.
+#
+# Layered on top of `recommended-strict` (all recommended rules, warnings
+# promoted to errors). Below we add the gaps recommended-strict does NOT cover.
+# =============================================================================
+
+extends:
+  - recommended-strict
+
+rules:
+  # --- Descriptions ----------------------------------------------------------
+  # recommended already flags missing operation descriptions; we keep these
+  # explicit and at `error` so the intent is visible to anyone editing the bar.
+  operation-description: error
+  operation-summary: error
+  tag-description: error
+  parameter-description: error
+
+  # --- Examples (the real agent-readiness gap) -------------------------------
+  # Agents infer payload shapes from examples. The built-in below requires an
+  # example on every required scalar property — the bulk of what agents need.
+  # (recommended ships it as a warning; we promote to error.)
+  scalar-property-missing-example: error
+  # NOTE: no built-in enforces examples on *nested objects / arrays* too.
+  # Broadening to those needs a custom JS plugin rule — deferred until a real
+  # spec shows it's worth it. Don't fake it with a configurable rule: the
+  # `SchemaProperties` subject checks for a child named `example`, not that
+  # each property HAS an example.
+
+  # Demonstration configurable rule — the pattern the team copies for
+  # product-specific standards. Requires a non-empty description on every
+  # operation.
+  rule/operation-description-non-empty:
+    subject:
+      type: Operation
+      property: description
+    assertions:
+      defined: true
+      nonEmpty: true
+    message: Every operation must have a non-empty description.
+    severity: error
