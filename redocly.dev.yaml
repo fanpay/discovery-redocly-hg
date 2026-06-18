@@ -1,0 +1,38 @@
+logo:
+  image: ./images/logo.png
+
+footer:
+  items:
+    - group: Redocly
+      items:
+        - href: https://redocly.com
+          label: Redocly.com
+        - href: https://redocly.com/docs
+          label: Redocly docs
+    - group: Docs Resources
+      items:
+        - href: https://markdoc.dev/
+          label: Markdoc
+        - href: https://openapis.org
+          label: OpenAPI
+
+aiAssistant:
+  trigger:
+    hide: true
+    inputType: button
+    inputIcon: redocly
+
+apis:
+  museum@v1:
+    root: ./apis/openapi.yaml
+    decorators:
+      info-description-override:
+        filePath: ./docs/env-banner-dev.md
+    x-servers-override:
+      - url: "https://dev-api.museum.example.com/v1"
+        description: Development server
+
+seo:
+  noindex: true
+
+envName: dev

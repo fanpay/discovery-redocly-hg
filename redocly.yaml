@@ -1,22 +1,46 @@
+# Global defaults
 logo:
   image: ./images/logo.png
-
 footer:
   items:
     - group: Redocly
       items:
         - href: https://redocly.com
           label: Redocly.com
-        - href: https://redocly.com/docs
-          label: Redocly docs
     - group: Docs Resources
       items:
-        - href: https://markdoc.dev/
-          label: Markdoc
         - href: https://openapis.org
           label: OpenAPI
+
+# Define environment-specific overrides
+env:
+  development:
+    envName: development
+    aiAssistant:
+      trigger:
+        hide: false # Show assistant in dev
+    apis:
+      museum@v1:
+        x-servers-override:
+          - url: "https://dev-api.museum.example.com/v1"
+            description: Development server
+  
+  qa:
+    envName: qa
+    apis:
+      museum@v1:
+        x-servers-override:
+          - url: "https://qa-api.museum.example.com/v1"
+            description: QA server
+
+# Production settings (default)
 aiAssistant:
   trigger:
     hide: true
-    inputType: button
-    inputIcon: redocly
+apis:
+  museum@v1:
+    root: ./apis/openapi.yaml
+    x-servers-override:
+      - url: "https://api.museum.example.com/v1"
+        description: Production server
+envName: production
