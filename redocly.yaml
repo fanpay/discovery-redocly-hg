@@ -17,15 +17,17 @@ env:
   development:
     aiAssistant:
       trigger:
-        hide: false # Show assistant in dev
+        hide: false
     apis:
       museum@v1:
+        root: ./apis/openapi.yaml # Add this line
         x-servers-override:
           - url: "https://dev-api.museum.example.com/v1"
             description: Development server
   qa:
     apis:
       museum@v1:
+        root: ./apis/openapi.yaml # Add this line
         x-servers-override:
           - url: "https://qa-api.museum.example.com/v1"
             description: QA server
