@@ -1,0 +1,28 @@
+{
+  "name": "discovery-redocly-hg",
+  "version": "1.0.0",
+  "description": "An example OpenAPI description for a fictional payment service.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "lint": "npx @redocly/cli@latest lint",
+    "preview": "npx @redocly/cli@latest preview"
+  },
+  "keywords": [
+    "OpenAPI",
+    "OAS",
+    "OpenAPI specification",
+    "OAS Example",
+    "OpenAPI Example"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/react": "^19.2.15"
+  },
+  "dependencies": {
+    "@redocly/cli": "latest",
+    "@redocly/realm": "^0.135.0-next.0",
+    "@redocly/theme": "^0.67.0-next.0"
+  }
+}

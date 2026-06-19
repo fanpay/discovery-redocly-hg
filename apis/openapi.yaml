@@ -1,702 +1,2023 @@
-openapi: 3.1.0
+openapi: 3.0.3
 info:
-  title: Redocly Museum API
-  description: Imaginary, but delightful Museum API for interacting with museum services and information. Built with love by Redocly.
-  version: 1.2.1
-  termsOfService: 'https://redocly.com/subscription-agreement/'
-  contact:
-    email: team@redocly.com
-    url: "https://redocly.com/docs/cli/"
-  license:
-    name: MIT
-    url: "https://opensource.org/license/mit/"
+  title: Payment Services API
+  version: 1.0.0
+  description: "## Overview\n\nThe Payment Services API is a REST-based payment platform designed to support a wide range\
+    \ of payment methods and transaction types.\n\nThe API uses predictable, resource-oriented URLs, accepts JSON request\
+    \ bodies, and returns JSON responses. Standard HTTP response codes, authentication mechanisms, and verbs are used throughout.\n\
+    \n---\n\n## Authentication\n\nThe Payment Services API uses **OAuth 2.0 Client Credentials** to authenticate requests.\
+    \ All API calls must include a valid bearer token in the `Authorization` header.\n\nStep 1 — Request a token\n\nExchange\
+    \ your `client_id` and `client_secret` for a bearer token. Credentials are sent as a **Basic Auth header** (`Authorization:\
+    \ Basic base64(client_id:client_secret)`).\n\n```bash\ncurl -X POST https://sandbox.api.example.com/oauth2/token \\\n\
+    \  -H \"Authorization: Basic BASE64_CLIENT_ID_SECRET\" \\\n  -H \"Content-Type: application/x-www-form-urlencoded\" \\\
+    \n  -d \"grant_type=client_credentials&scope=api_scope\"\n```\n\n**Response:**\n\n```json\n{\n  \"access_token\": \"eyJhbGciOiJSUzI1NiIsInR5...\"\
+    ,\n  \"token_type\": \"Bearer\",\n  \"expires_in\": 3600,\n  \"scope\": \"api_scope\"\n}\n```\n\nStep 2 — Authenticate\
+    \ requests\n\nPass the token in the `Authorization` header on every API request. Tokens expire after **3600 seconds**\
+    \ — request a new one when it expires.\n\n```bash\ncurl -X POST https://sandbox.api.example.com/v1/payments \\\n  -H \"\
+    Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5...\" \\\n  -H \"Content-Type: application/json\" \\\n  -H \"merchantToken:\
+    \ YOUR_PARTNER_TOKEN\"\n```\n\nRequired headers\n\n| Header | Required | Description |\n|--------|----------|-------------|\n\
+    | `Authorization` | ✓ | `Bearer {access_token}` from the token endpoint |\n| `Content-Type` | ✓ | Always `application/json`\
+    \ |\n| `merchantToken` | ✓ | Your unique Merchant Identifier (GUID) |\n| `requestId` | | Optional trace ID (UUID) for\
+    \ idempotency and debugging |\n\n### Environments\n\n| Environment | Base URL | Token URL |\n|-------------|----------|-----------|\n\
+    | Sandbox | `https://sandbox.api.example.com/v1` | `https://sandbox.api.example.com/oauth2/token` |\n| Production | `https://api.example.com/v1`\
+    \ | `https://api.example.com/oauth2/token` |\n\nYour `client_id` and `client_secret` determine the environment — sandbox\
+    \ credentials only work against the sandbox base URL.\n\n---\n\n## Errors\n\nThe API uses standard HTTP status codes.\
+    \ Errors return a JSON body with `code`, `message`, and optional `details`.\n\n| Code | Meaning |\n|------|---------|\n\
+    | `200` | Success |\n| `400` | Bad Request — missing or invalid parameters |\n| `401` | Unauthorized — invalid or expired\
+    \ bearer token |\n| `403` | Forbidden — valid token but insufficient permissions |\n| `404` | Not Found — resource does\
+    \ not exist |\n| `409` | Conflict — duplicate `requestId` or state conflict |\n| `422` | Unprocessable — request is valid\
+    \ but was declined by the processor |\n| `500` | Server Error — contact support if this persists |\n\n```json\n{\n  \"\
+    code\": \"INVALID_PAYMENT_METHOD\",\n  \"message\": \"The card number provided is not valid.\",\n  \"details\": \"card:\
+    \ fails Luhn check\"\n}\n```\n\n---\n\n## Pagination\n\nEndpoints that return lists of results support **page-based pagination**\
+    \ using two parameters: `page` and `pageSize`. Depending on the endpoint, these are passed as query string parameters\
+    \ (GET requests) or as fields in the request body (POST search/report requests).\n\nParameters\n\n| Parameter | Type |\
+    \ Default | Description |\n|-----------|------|---------|-------------|\n| `page` | integer | `1` | The page number to\
+    \ retrieve, starting at `1` |\n| `pageSize` | integer | `25` | Number of results per page |\n\nQuery string (GET endpoints)\n\
+    \nReport endpoints accept pagination as query parameters:\n\n```bash\ncurl -X GET \"https://sandbox.api.example.com/v1/reports/ccdailysettlement\n\
+    \  ?reportStartDate=01/01/2024\n  &reportEndDate=01/31/2024\n  &page=2\n  &pageSize=25\" \\\n  -H \"Authorization: Bearer\
+    \ {token}\" \\\n  -H \"merchantToken: {merchantToken}\"\n```\n\nRequest body (POST endpoints)\n\nSearch and custom report\
+    \ endpoints accept pagination in the request body:\n\n```json\n{\n  \"reportType\": \"ccTransaction\",\n  \"reportStartDate\"\
+    : \"01/01/2024\",\n  \"reportEndDate\": \"01/31/2024\",\n  \"page\": 1,\n  \"pageSize\": 25\n}\n```\n\nDetecting the last\
+    \ page\n\nThe API does not return envelope metadata such as `totalPages` or `hasMore`. To retrieve all results, increment\
+    \ `page` until the number of records returned is less than `pageSize` — that indicates you have reached the final page.\n\
+    \n```\npage 1 → 25 results  (full page, continue)\npage 2 → 25 results  (full page, continue)\npage 3 → 11 results  (partial\
+    \ page, stop)\n```\n\nWhich endpoints support pagination\n\n| Resource | Endpoint | Style |\n|----------|----------|-------|\n\
+    | Reports | `POST /reports` | Request body (`page`, `pageSize`) |\n| Reports | `GET /reports/*` | Query string (`page`,\
+    \ `pageSize`) |\n| Invoices | `POST /invoices/search` | Request body (`pageNumber`, `pageSize`) |\n\nSingle-resource endpoints\
+    \ — payments, customers, subscriptions, payment methods — return a single object or a complete list and do not paginate.\n\
+    \n---\n\n## How it works\n\nEach request processes a single transaction or resource. The API is designed to be explicit\
+    \ and predictable, ensuring clear outcomes for every operation.\n\n- **Sale** — Authorize and capture funds in a single\
+    \ request\n- **Authorization** — Reserve funds for later capture\n- **Capture** — Complete a previously authorized transaction\n\
+    - **Void** — Cancel an authorization before settlement\n- **Refund** — Return funds for a completed transaction\n- **Batch\
+    \ settlement** — Group and settle transactions\n- **Subscriptions** — Manage recurring payments\n- **Payment links** —\
+    \ Generate hosted payment experiences\n- **Webhooks** — Receive real-time transaction updates\n\n---\n\n## Versioning\n\
+    \nThe current API version is **v1**, reflected in all endpoint paths (`/v1/...`). Breaking changes will be introduced\
+    \ under a new version prefix.\n\n---\n\n## Getting started\n\n1. Obtain your `client_id`, `client_secret`, and `merchantToken`\
+    \ from your your onboarding team\n2. Request a bearer token from the token endpoint\n3. Send your first payment request\
+    \ to `POST /payments`"
 servers:
-  - url: "https://redocly.com/_mock/docs/openapi/museum-api"
-paths:
-  /museum-hours:
-    get:
-      summary: Get museum hours
-      description: Get upcoming museum operating hours.
-      operationId: getMuseumHours
-      tags:
-        - Operations
-      parameters:
-        - $ref: "#/components/parameters/StartDate"
-        - $ref: "#/components/parameters/PaginationPage"
-        - $ref: "#/components/parameters/PaginationLimit"
-      responses:
-        "200":
-          description: Success.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/MuseumHours"
-              examples:
-                default_example:
-                  $ref: "#/components/examples/GetMuseumHoursResponseExample"
-        "400":
-          $ref: '#/components/responses/BadRequest'
-        "404":
-          $ref: '#/components/responses/NotFound'
-  /special-events:
-    post:
-      summary: Create special events
-      description: Creates a new special event for the museum.
-      operationId: createSpecialEvent
-      tags:
-        - Events
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/SpecialEvent"
-            examples:
-              default_example:
-                $ref: "#/components/examples/CreateSpecialEventRequestExample"
-      responses:
-        "201":
-          description: Created.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/SpecialEvent"
-              examples:
-                default_example:
-                  $ref: "#/components/examples/CreateSpecialEventResponseExample"
-        "400":
-          $ref: '#/components/responses/BadRequest'
-        "404":
-          $ref: '#/components/responses/NotFound'
-    get:
-      summary: List special events
-      description: Return a list of upcoming special events at the museum.
-      operationId: listSpecialEvents
-      tags:
-        - Events
-      parameters:
-        - $ref: "#/components/parameters/StartDate"
-        - $ref: "#/components/parameters/EndDate"
-        - $ref: "#/components/parameters/PaginationPage"
-        - $ref: "#/components/parameters/PaginationLimit"
-      responses:
-        "200":
-          description: Success.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/SpecialEventCollection"
-              examples:
-                default_example:
-                  $ref: "#/components/examples/ListSpecialEventsResponseExample"
-        "400":
-          $ref: '#/components/responses/BadRequest'
-        "404":
-          $ref: '#/components/responses/NotFound'
-  /special-events/{eventId}:
-    get:
-      summary: Get special event
-      description: Get details about a special event.
-      operationId: getSpecialEvent
-      tags:
-        - Events
-      parameters:
-        - $ref: "#/components/parameters/EventId"
-      responses:
-        "200":
-          description: Success.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/SpecialEvent"
-              examples:
-                default_example:
-                  $ref: "#/components/examples/GetSpecialEventResponseExample"
-        "400":
-          $ref: '#/components/responses/BadRequest'
-        "404":
-          $ref: '#/components/responses/NotFound'
-    patch:
-      summary: Update special event
-      description: Update the details of a special event.
-      operationId: updateSpecialEvent
-      tags:
-        - Events
-      parameters:
-        - $ref: "#/components/parameters/EventId"
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/SpecialEventFields"
-            examples:
-              default_example:
-                $ref: "#/components/examples/UpdateSpecialEventRequestExample"
-      responses:
-        "200":
-          description: Success.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/SpecialEvent"
-              examples:
-                default_example:
-                  $ref: "#/components/examples/UpdateSpecialEventResponseExample"
-        "400":
-          $ref: '#/components/responses/BadRequest'
-        "404":
-          $ref: '#/components/responses/NotFound'
-    delete:
-      summary: Delete special event
-      description: Delete a special event from the collection. Allows museum to cancel planned events.
-      operationId: deleteSpecialEvent
-      tags:
-        - Events
-      parameters:
-        - $ref: "#/components/parameters/EventId"
-      responses:
-        "204":
-          description: Success - no content.
-        "400":
-          $ref: '#/components/responses/BadRequest'
-        "401":
-          $ref: '#/components/responses/Unauthorized'
-        "404":
-          $ref: '#/components/responses/NotFound'
-  /tickets:
-    post:
-      summary: Buy museum tickets
-      description: Purchase museum tickets for general entry or special events.
-      operationId: buyMuseumTickets
-      tags:
-        - Tickets
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/BuyMuseumTickets"
-            examples:
-              general_entry:
-                $ref: "#/components/examples/BuyGeneralTicketsRequestExample"
-              event_entry:
-                $ref: "#/components/examples/BuyEventTicketsRequestExample"
-      responses:
-        "201":
-          description: Created.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/MuseumTicketsConfirmation"
-              examples:
-                general_entry:
-                  $ref: "#/components/examples/BuyGeneralTicketsResponseExample"
-                event_entry:
-                  $ref: "#/components/examples/BuyEventTicketsResponseExample"
-        "400":
-          $ref: '#/components/responses/BadRequest'
-        "404":
-          $ref: '#/components/responses/NotFound'
-  /tickets/{ticketId}/qr:
-    get:
-      summary: Get ticket QR code
-      description: Return an image of your ticket with scannable QR code. Used for event entry.
-      operationId: getTicketCode
-      tags:
-        - Tickets
-      parameters:
-        - $ref: "#/components/parameters/TicketId"
-      responses:
-        "200":
-          description: Scannable event ticket in image format.
-          content:
-            image/png:
-              schema:
-                $ref: "#/components/schemas/TicketCodeImage"
-        "400":
-          $ref: '#/components/responses/BadRequest'
-        "404":
-          $ref: '#/components/responses/NotFound'
-webhooks:
-  publishNewEvent:
-    post:
-      summary: New special event added
-      description: Publish details of a new or updated event.
-      operationId: publishNewEvent
-      tags:
-        - Events
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/SpecialEvent"
-            examples:
-              default_example:
-                $ref: "#/components/examples/GetSpecialEventResponseExample"
-      responses:
-        "202":
-          description: Data accepted.
+- url: https://sandbox.api.example.com/v1
+  description: Sandbox (recommended)
+- url: https://api.example.com/v1
+  description: Production
+x-tagGroups:
+- name: Payments
+  tags:
+  - Payments
+  - Refunds
+- name: Vault & Methods
+  tags:
+  - PaymentMethods
+- name: Customers
+  tags:
+  - Customers
+tags:
+- name: Payments
+  description: "The Payments resource in the Payment Services API is a robust service designed to manage the full lifecycle\
+    \ of payment transactions. It supports operations including creating, canceling, authorizing, completing, and searching\
+    \ payments. This resource ensures secure, reliable, and flexible processing, making it suitable for diverse scenarios\
+    \ such as retail transactions, billing, and tipping.\n\nThe Payments API handles various transaction types and workflows\
+    \ with multiple payment methods such as cards, ACH with accounts, stored vaults, cryptograms, and tokens—including card,\
+    \ ACH, and NetworkToken. It offers granular control over each stage of the process. Whether initiating a sale, reserving\
+    \ funds, finalizing a transaction, or voiding a payment, this resource provides endpoints to streamline operations and\
+    \ maintain integrity.\n\n## The Payment Request Object\n\n| Field | Type | Required | Description |\n|-------|------|----------|-------------|\n\
+    | amount.amount | number | ✓ | Transaction amount (e.g. `50.00`) |\n| amount.currency | string | ✓ | ISO 4217 currency\
+    \ code (e.g. `USD`) |\n| paymentMethod | object | ✓ | Exactly one payment method — `card`, `ach`, `vault`, `token`, `cryptogram`,\
+    \ `networkToken`, `achToken`, or `fleetCard` |\n| orderId | string | | Merchant-assigned order identifier. Auto-generated\
+    \ if omitted |\n| customerId | integer | | Associate transaction with an existing customer record |\n| tipAmount.amount\
+    \ | number | | Tip amount added to the transaction |\n| tipAmount.currency | string | | Currency for the tip (e.g. `USD`)\
+    \ |\n| customData | array | | Array of `{ name, value }` pairs passed through and echoed in the response |\n| orderData\
+    \ | object | | Level 2/3 line-item detail for enhanced interchange |\n| isPartialAllowed | boolean | | If `true`, accept\
+    \ a partial approval when full amount is unavailable |\n\n```json\n{\n  \"amount\": { \"amount\": 50.00, \"currency\"\
+    : \"USD\" },\n  \"paymentMethod\": {\n    \"card\": {\n      \"card\": \"4111111111111111\",\n      \"expiry\": \"11/26\"\
+    ,\n      \"cvv\": \"737\"\n    }\n  },\n  \"orderId\": \"ORD-2024-001\",\n  \"customerId\": 98765,\n  \"tipAmount\": {\
+    \ \"amount\": 5.00, \"currency\": \"USD\" },\n  \"customData\": [\n    { \"name\": \"invoiceNumber\", \"value\": \"INV-001\"\
+    \ }\n  ],\n  \"isPartialAllowed\": false\n}\n```"
+- name: Refunds
+  description: 'The Refunds resource in the Payment Services API is designed to handle various refund scenarios with flexibility
+    and security. It supports operations for processing standard, standalone, vault-based, and EMV-based refunds, ensuring
+    seamless integration with diverse payment workflows.
 
+
+    This resource enables businesses to manage post-transaction adjustments efficiently, whether initiated due to customer
+    requests, service changes, or reconciliation needs. It supports multiple payment methods and refund types, offering granular
+    control and compliance with industry standards.
+
+
+    ## The Refund Object
+
+
+    | Field | Type | Description |
+
+    |-------|------|-------------|
+
+    | paymentId | string (UUID) | UUID of the refund transaction |
+
+    | parentPaymentId | string (UUID) | UUID of the original transaction this refund is applied against |
+
+    | requestId | string (UUID) | Unique identifier for this API request |
+
+    | orderId | string | Order identifier associated with this refund |
+
+    | amountApproved | number | Amount approved for the refund |
+
+    | batchNumber | string | Settlement batch number this refund belongs to |
+
+    | authResponse | string | Refund result: `APPROVED`, `DECLINED`, or `ERROR` |
+
+    | responseCode | string | Processor response code for the refund operation |
+
+    | responseMessage | string | Human-readable message describing the refund result |
+
+    | isPartial | boolean | True if only part of the requested refund amount was approved |
+
+    | token | string | Vault token representing the payment method used |
+
+    | accountResponseData | object | AVS and CVV verification result codes from the processor |'
+- name: PaymentMethods
+  description: 'The Payment Methods resource in the Payment Services API enables businesses to manage customer payment instruments
+    securely and efficiently. It supports operations for creating, updating, validating, and tokenizing payment methods, as
+    well as checking applicable surcharges and device status. This resource plays a vital role in enabling smooth and secure
+    transactions across various payment workflows.
+
+
+    It supports multiple payment types including cards, ACH, stored vaults, cryptograms, and tokens, making it suitable for
+    a wide range of business scenarios such as retail, subscriptions, logistics, and service-based payments.
+
+
+    ## The Payment Method Object
+
+
+    | Field | Type | Description |
+
+    |-------|------|-------------|
+
+    | paymentMethodId | string (UUID) | UUID of the newly created or updated vaulted payment method |
+
+    | customerId | integer | Numeric ID of the customer associated with this payment method |
+
+    | requestId | string (UUID) | Unique identifier for this API request |'
+- name: Customers
+  description: 'The Customers resource in the Payment Services API enables businesses to manage customer profiles and associated
+    payment data efficiently. It supports operations for creating, updating customer records, and retrieving stored details
+    along with payment methods and active subscriptions. This resource plays a central role in enabling personalized and secure
+    payment experiences across various business workflows.
+
+
+    ## The Customer Object
+
+
+    | Field | Type | Description |
+
+    |-------|------|-------------|
+
+    | customerId | integer | Numeric ID of the newly created customer record |
+
+    | paymentMethodId | array[string] | UUIDs of vaulted payment methods associated with this customer |
+
+    | requestId | string (UUID) | Unique identifier for this API request |'
+security:
+- oauth2ClientCredentials:
+  - api_scope
+paths:
+  /payments:
+    post:
+      operationId: createPayment
+      summary: Create a payment (sale or debit)
+      description: 'Submits a payment transaction that immediately authorizes and captures funds in a single step
+
+        (sale). Supply exactly one payment method type in the `paymentMethod` object — `card`, `ach`,
+
+        `vault`, `token`, `cryptogram`, `networkToken`, `achToken`, or `fleetCard`. The response includes
+
+        a `paymentId` which is the primary identifier for all subsequent operations (cancel, refund,
+
+        search). If `orderId` is omitted, the platform assigns one. For ACH payments, settlement is
+
+        asynchronous and the `authResponse` reflects submission, not final settlement. To reserve funds
+
+        without capturing, use `POST /payments/authorize` instead.'
+      tags:
+      - Payments
+      x-codeSamples:
+      - lang: cURL
+        label: cURL
+        source: "curl -X POST https://sandbox.api.example.com/v1/payments \\\n  -H \"Authorization: Bearer {token}\" \\\n\
+          \  -H \"Content-Type: application/json\" \\\n  -H \"merchantToken: {merchantToken}\" \\\n  -d '{\n    \"amount\"\
+          : { \"amount\": 50.00, \"currency\": \"USD\" },\n    \"paymentMethod\": {\n      \"card\": {\n        \"card\":\
+          \ \"4111111111111111\",\n        \"expiry\": \"11/26\",\n        \"cvv\": \"737\"\n      }\n    }\n  }'"
+      parameters:
+      - $ref: '#/components/parameters/merchantToken'
+      - $ref: '#/components/parameters/requestId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentRequest'
+            examples:
+              card:
+                summary: Card payment
+                value:
+                  amount:
+                    amount: 50.0
+                    currency: USD
+                  paymentMethod:
+                    card:
+                      card: '4111111111111111'
+                      expiry: 11/26
+                      cvv: '737'
+              ach:
+                summary: ACH payment
+                value:
+                  amount:
+                    amount: 50.0
+                    currency: USD
+                  paymentMethod:
+                    ach:
+                      accountNumber: '12345678901'
+                      routingNumber: '021000021'
+                      accountType: Checking
+              vault:
+                summary: Vault payment
+                value:
+                  amount:
+                    amount: 50.0
+                    currency: USD
+                  paymentMethod:
+                    vault:
+                      paymentMethodId: c9d8e7f6-a5b4-3c2d-1e0f-9a8b7c6d5e4f
+                      cvv: '737'
+              networkToken:
+                summary: Network token payment
+                value:
+                  amount:
+                    amount: 50.0
+                    currency: USD
+                  paymentMethod:
+                    networkToken:
+                      token: '4895370012345678'
+                      expiryMonth: '11'
+                      expiryYear: '2026'
+                      secureCavvData: AAABCSIIAAAAAAACcwgAEMCoNh==
+                      tokenSource: APPLEPAY
+      responses:
+        '200':
+          description: Payment processed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentResponse'
+              examples:
+                approved:
+                  summary: Approved payment
+                  value:
+                    isPartial: false
+                    orderId: ORD-20240115-001
+                    customerId: 98765
+                    batchNumber: BATCH-001
+                    subscriptionId: null
+                    fee:
+                      feeAmount: 1.25
+                      feeAuthResponse: null
+                    token: tok_4111111111111
+                    accountResponseData:
+                      avs: Y
+                      cvv: M
+                    amountApproved: 50.0
+                    authResponse: APPROVED
+                    responseCode: '0'
+                    responseMessage: Approved
+                    paymentId: d4e5f6a7-b8c9-0123-def0-123456789012
+                    requestId: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '405':
+          description: Method Not Allowed
+        '406':
+          description: Not Acceptable
+        '408':
+          description: Request Timeout
+        '415':
+          description: Unsupported Media Type
+        '429':
+          description: Too Many Requests
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '501':
+          description: Not Implemented
+        '503':
+          description: Service Unavailable
+        '504':
+          description: Gateway Timeout
+        '505':
+          description: HTTP Version Not Supported
+        '506':
+          description: Variant Also Negotiates
+        '507':
+          description: Insufficient Storage
+        '508':
+          description: Loop Detected
+        '510':
+          description: Not Extended
+        '511':
+          description: Network Authentication Required
+  /refunds:
+    post:
+      operationId: createRefund
+      summary: Create a refund, credit, or standalone refund
+      description: 'Processes a refund using one of three variants determined by the fields supplied.
+
+
+        **Standard Refund** — Supply `paymentId` to refund against a prior transaction. The `amount` can
+
+        be less than the original (partial refund). Omit `amount` to refund the full original amount.
+
+        Set `isACH: true` for ACH transactions.
+
+
+        **ACH Credit** — Supply `paymentMethod.ach` without a `paymentId` to push a direct credit to a
+
+        bank account with no prior payment reference.
+
+
+        **Standalone Refund** — Supply `paymentMethod` (card, vault, or cryptogram) without a `paymentId`
+
+        to return funds directly to a payment instrument without referencing an original transaction.
+
+
+        **Gotcha:** You cannot refund a voided transaction (400 error). You cannot refund more than the
+
+        original transaction amount. Refunds against settled transactions are processed as credits in the
+
+        next batch.'
+      tags:
+      - Refunds
+      parameters:
+      - $ref: '#/components/parameters/merchantToken'
+      - $ref: '#/components/parameters/requestId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefundUnion'
+            examples:
+              standard:
+                summary: Standard refund against a payment
+                value:
+                  paymentId: d4e5f6a7-b8c9-0123-def0-123456789012
+                  amount:
+                    amount: 25.0
+                    currency: USD
+                  isACH: false
+              achCredit:
+                summary: ACH credit
+                value:
+                  amount:
+                    amount: 50.0
+                    currency: USD
+                  paymentMethod:
+                    ach:
+                      accountNumber: '12345678901'
+                      routingNumber: '021000021'
+                      accountType: Checking
+              standalone:
+                summary: Standalone vault refund
+                value:
+                  amount:
+                    amount: 30.0
+                    currency: USD
+                  paymentMethod:
+                    vault:
+                      paymentMethodId: c9d8e7f6-a5b4-3c2d-1e0f-9a8b7c6d5e4f
+                      cvv: '737'
+      responses:
+        '200':
+          description: Refund processed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RefundResponse'
+              examples:
+                approved:
+                  summary: Refund approved
+                  value:
+                    amountApproved: 25.0
+                    authResponse: APPROVED
+                    batchNumber: BATCH-001
+                    responseCode: '0'
+                    orderId: ORD-20240115-001
+                    parentPaymentId: d4e5f6a7-b8c9-0123-def0-123456789012
+                    responseMessage: Refund approved
+                    paymentId: e5f6a7b8-c9d0-1234-ef01-234567890123
+                    requestId: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '405':
+          description: Method Not Allowed
+        '406':
+          description: Not Acceptable
+        '408':
+          description: Request Timeout
+        '415':
+          description: Unsupported Media Type
+        '429':
+          description: Too Many Requests
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '501':
+          description: Not Implemented
+        '503':
+          description: Service Unavailable
+        '504':
+          description: Gateway Timeout
+        '505':
+          description: HTTP Version Not Supported
+        '506':
+          description: Variant Also Negotiates
+        '507':
+          description: Insufficient Storage
+        '508':
+          description: Loop Detected
+        '510':
+          description: Not Extended
+        '511':
+          description: Network Authentication Required
+  /paymentmethods:
+    post:
+      operationId: createPaymentMethod
+      summary: Create (vault) a payment method
+      description: 'Creates a new vault entry, storing a payment instrument securely on the platform. Supports
+
+        `card`, `ach`, `token`, `achToken`, `cryptogram`, and `fleetCard` payment method types.
+
+        Optionally associate the vault entry with an existing customer by supplying `customerId`. Returns
+
+        a `paymentMethodId` (GUID) that replaces raw payment data in future `POST /payments`,
+
+        `POST /subscriptions`, and `POST /refunds` calls using the `vault` payment method type.'
+      tags:
+      - PaymentMethods
+      parameters:
+      - $ref: '#/components/parameters/merchantToken'
+      - $ref: '#/components/parameters/requestId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePaymentMethodRequest'
+            examples:
+              card:
+                summary: Vault a card
+                value:
+                  customerId: 98765
+                  paymentMethod:
+                    card:
+                      card: '4111111111111111'
+                      expiry: 11/26
+                      cvv: '737'
+                      accNickName: My Visa
+                      isActive: true
+                      billingAddress:
+                        postalCode: '12345'
+                        firstName: Jane
+                        lastName: Doe
+                        address: 123 Main St
+                        city: Springfield
+                        state: IL
+                        country: US
+              ach:
+                summary: Vault an ACH account
+                value:
+                  customerId: 98765
+                  paymentMethod:
+                    ach:
+                      accountNumber: '12345678901'
+                      routingNumber: '021000021'
+                      accountType: Checking
+                      accNickName: Primary Checking
+                      isActive: true
+      responses:
+        '200':
+          description: Payment method created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentMethodResponse'
+              examples:
+                created:
+                  summary: Payment method created
+                  value:
+                    paymentMethodId: c9d8e7f6-a5b4-3c2d-1e0f-9a8b7c6d5e4f
+                    customerId: 98765
+                    requestId: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '405':
+          description: Method Not Allowed
+        '406':
+          description: Not Acceptable
+        '408':
+          description: Request Timeout
+        '415':
+          description: Unsupported Media Type
+        '429':
+          description: Too Many Requests
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '501':
+          description: Not Implemented
+        '503':
+          description: Service Unavailable
+        '504':
+          description: Gateway Timeout
+        '505':
+          description: HTTP Version Not Supported
+        '506':
+          description: Variant Also Negotiates
+        '507':
+          description: Insufficient Storage
+        '508':
+          description: Loop Detected
+        '510':
+          description: Not Extended
+        '511':
+          description: Network Authentication Required
+  /customers:
+    post:
+      operationId: createCustomer
+      summary: Create a customer record
+      description: 'Creates a new customer profile and optionally vaults one or more payment methods in a single
+
+        call. All profile fields (`firstName`, `lastName`, `address`, etc.) are optional — you may
+
+        create a minimal customer record and associate payment methods later via `POST /paymentmethods`.
+
+        If `paymentMethods` is supplied, each entry is vaulted and the first `paymentMethodId` is
+
+        returned in the response. Returns a numeric `customerId` used to reference this customer in
+
+        payment and subscription calls.'
+      tags:
+      - Customers
+      parameters:
+      - $ref: '#/components/parameters/merchantToken'
+      - $ref: '#/components/parameters/requestId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCustomerRequest'
+            examples:
+              withCard:
+                summary: Create customer with card
+                value:
+                  firstName: Jane
+                  lastName: Doe
+                  address: 123 Main St
+                  city: Springfield
+                  state: IL
+                  postalCode: '12345'
+                  country: US
+                  phone: 555-867-5309
+                  email: jane.doe@example.com
+                  paymentMethods:
+                  - card:
+                      card: '4111111111111111'
+                      expiry: 11/26
+                      cvv: '737'
+                      accNickName: Primary Card
+                      isActive: true
+      responses:
+        '200':
+          description: Customer created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerResponse'
+              examples:
+                created:
+                  summary: Customer created
+                  value:
+                    customerId: 98765
+                    paymentMethodId: c9d8e7f6-a5b4-3c2d-1e0f-9a8b7c6d5e4f
+                    requestId: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '405':
+          description: Method Not Allowed
+        '406':
+          description: Not Acceptable
+        '408':
+          description: Request Timeout
+        '415':
+          description: Unsupported Media Type
+        '429':
+          description: Too Many Requests
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '501':
+          description: Not Implemented
+        '503':
+          description: Service Unavailable
+        '504':
+          description: Gateway Timeout
+        '505':
+          description: HTTP Version Not Supported
+        '506':
+          description: Variant Also Negotiates
+        '507':
+          description: Insufficient Storage
+        '508':
+          description: Loop Detected
+        '510':
+          description: Not Extended
+        '511':
+          description: Network Authentication Required
+    get:
+      operationId: getAllCustomers
+      summary: Retrieve all customers
+      description: 'Returns all customer profiles for the merchant, including each customer''s vaulted payment
+
+        methods (`vaults`) and active subscriptions (`subscriptions`). This endpoint returns the full
+
+        dataset with no pagination — for merchants with large customer bases, response payload may be
+
+        significant. Use `GET /customers/{customerId}` to retrieve a single record.'
+      tags:
+      - Customers
+      parameters:
+      - $ref: '#/components/parameters/merchantToken'
+      - $ref: '#/components/parameters/requestId'
+      responses:
+        '200':
+          description: Customer list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerListResponse'
+              examples:
+                list:
+                  summary: Customer list
+                  value:
+                  - customerId: 98765
+                    firstName: Jane
+                    lastName: Doe
+                    address: 123 Main St
+                    city: Springfield
+                    state: IL
+                    postalCode: '12345'
+                    country: US
+                    phone: 555-867-5309
+                    email: jane.doe@example.com
+                    vaults:
+                    - paymentMethodId: c9d8e7f6-a5b4-3c2d-1e0f-9a8b7c6d5e4f
+                      accNickName: Primary Card
+                      isActive: true
+                    subscriptions: []
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '405':
+          description: Method Not Allowed
+        '406':
+          description: Not Acceptable
+        '408':
+          description: Request Timeout
+        '415':
+          description: Unsupported Media Type
+        '429':
+          description: Too Many Requests
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '501':
+          description: Not Implemented
+        '503':
+          description: Service Unavailable
+        '504':
+          description: Gateway Timeout
+        '505':
+          description: HTTP Version Not Supported
+        '506':
+          description: Variant Also Negotiates
+        '507':
+          description: Insufficient Storage
+        '508':
+          description: Loop Detected
+        '510':
+          description: Not Extended
+        '511':
+          description: Network Authentication Required
+  /customers/{customerId}:
+    get:
+      operationId: getCustomer
+      summary: Retrieve a specific customer
+      description: 'Returns the full profile for a single customer identified by the numeric `customerId`, including
+
+        all associated `vaults` (stored payment methods) and `subscriptions`. Returns 404 if the
+
+        `customerId` does not exist or does not belong to the merchant identified by `merchantToken`.'
+      tags:
+      - Customers
+      parameters:
+      - $ref: '#/components/parameters/merchantToken'
+      - $ref: '#/components/parameters/requestId'
+      - name: customerId
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: Unique customer identifier
+      responses:
+        '200':
+          description: Customer details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerRecord'
+              examples:
+                customer:
+                  summary: Customer with vaults and subscriptions
+                  value:
+                    customerId: 98765
+                    firstName: Jane
+                    lastName: Doe
+                    address: 123 Main St
+                    city: Springfield
+                    state: IL
+                    postalCode: '12345'
+                    country: US
+                    phone: 555-867-5309
+                    email: jane.doe@example.com
+                    vaults:
+                    - paymentMethodId: c9d8e7f6-a5b4-3c2d-1e0f-9a8b7c6d5e4f
+                      accNickName: Primary Card
+                      isActive: true
+                    subscriptions:
+                    - subscriptionId: b2c3d4e5-f6a7-8901-bcde-f12345678901
+                      frequency: Monthly
+                      amount: 29.99
+                      active: true
+                      startDate: 02/01/2024
+                      endDate: 02/01/2025
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '405':
+          description: Method Not Allowed
+        '406':
+          description: Not Acceptable
+        '408':
+          description: Request Timeout
+        '415':
+          description: Unsupported Media Type
+        '429':
+          description: Too Many Requests
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '501':
+          description: Not Implemented
+        '503':
+          description: Service Unavailable
+        '504':
+          description: Gateway Timeout
+        '505':
+          description: HTTP Version Not Supported
+        '506':
+          description: Variant Also Negotiates
+        '507':
+          description: Insufficient Storage
+        '508':
+          description: Loop Detected
+        '510':
+          description: Not Extended
+        '511':
+          description: Network Authentication Required
+    patch:
+      operationId: modifyCustomer
+      summary: Modify a customer record
+      description: 'Updates profile fields on an existing customer record. All fields are optional — supply only
+
+        what needs to change. Does not affect associated payment methods or subscriptions; use
+
+        `PATCH /paymentmethods/{paymentMethodId}` and `PATCH /subscriptions/{subscriptionId}` for those.
+
+        Returns 404 if the customer does not exist.'
+      tags:
+      - Customers
+      parameters:
+      - $ref: '#/components/parameters/merchantToken'
+      - $ref: '#/components/parameters/requestId'
+      - name: customerId
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: Unique customer identifier
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModifyCustomerRequest'
+            examples:
+              update:
+                summary: Update customer profile
+                value:
+                  firstName: Jane
+                  lastName: Smith
+                  address: 456 Oak Ave
+                  city: Chicago
+                  state: IL
+                  postalCode: '60601'
+                  country: US
+                  email: jane.smith@example.com
+      responses:
+        '200':
+          description: Customer updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModifyCustomerResponse'
+              examples:
+                updated:
+                  summary: Customer updated
+                  value:
+                    customerId: 98765
+                    requestId: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '405':
+          description: Method Not Allowed
+        '406':
+          description: Not Acceptable
+        '408':
+          description: Request Timeout
+        '415':
+          description: Unsupported Media Type
+        '429':
+          description: Too Many Requests
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '501':
+          description: Not Implemented
+        '503':
+          description: Service Unavailable
+        '504':
+          description: Gateway Timeout
+        '505':
+          description: HTTP Version Not Supported
+        '506':
+          description: Variant Also Negotiates
+        '507':
+          description: Insufficient Storage
+        '508':
+          description: Loop Detected
+        '510':
+          description: Not Extended
+        '511':
+          description: Network Authentication Required
 components:
+  securitySchemes:
+    oauth2ClientCredentials:
+      type: oauth2
+      description: 'Use the **Client Credentials** flow. Enter your `client_id` and `client_secret` to obtain a bearer token.
+
+
+        > ⚠️ **Important:** The token endpoint requires credentials sent as a **Basic Auth header**
+
+        > (`Authorization: Basic base64(client_id:client_secret)`). Enable this option in the
+
+        > Redocly auth dialog under *"Client Authentication"* → **Send as Basic Auth header**.
+
+
+        The scope `api_scope` is automatically included.'
+      flows:
+        clientCredentials:
+          tokenUrl: https://sandbox.api.example.com/oauth2/token
+          scopes:
+            api_scope: Access to Payment Services API
+  parameters:
+    merchantToken:
+      name: merchantToken
+      in: header
+      required: true
+      description: Unique Merchant Identifier (GUID)
+      schema:
+        type: string
+        pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+    requestId:
+      name: requestId
+      in: header
+      required: false
+      description: Unique trace ID for the request (GUID)
+      schema:
+        type: string
+        pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
   schemas:
-    TicketType:
-      description: Type of ticket being purchased. Use `general` for regular museum entry and `event` for tickets to special events.
-      type: string
-      enum:
-        - event
-        - general
-      example: event
-    Date:
-      type: string
-      format: date
-      example: '2023-10-29'
-    Email:
-      description: Email address for ticket purchaser.
-      type: string
-      format: email
-      example: museum-lover@example.com
-    BuyMuseumTickets:
-      description: Data to purchase a ticket.
+    Address:
       type: object
-      allOf:
-        - type: object
-          properties:
-            email:
-              $ref: "#/components/schemas/Email"
-        - $ref: "#/components/schemas/Ticket"
-    TicketMessage:
-      description: Confirmation message after a ticket purchase.
-      type: string
-      example: Museum general entry ticket purchased
-    TicketId:
-      description: Unique identifier for museum ticket. Generated when purchased.
-      type: string
-      format: uuid
-      example: a54a57ca-36f8-421b-a6b4-2e8f26858a4c
-    TicketConfirmation:
-      description: Unique confirmation code used to verify ticket purchase.
-      type: string
-      example: 'ticket-event-a98c8f-7eb12'
-    Ticket:
-      description: Ticket for museum entry, can be general admission or special event.
+      required:
+      - postalCode
+      properties:
+        firstName:
+          description: First name of the cardholder or account holder.
+          type: string
+          maxLength: 100
+        lastName:
+          description: Last name of the cardholder or account holder.
+          type: string
+          maxLength: 100
+        address:
+          description: Primary street address line.
+          type: string
+          maxLength: 250
+        address2:
+          description: Secondary address line (suite, apartment, etc.).
+          type: string
+          maxLength: 100
+        city:
+          description: City name.
+          type: string
+          maxLength: 50
+        state:
+          description: State or province code.
+          type: string
+          maxLength: 25
+        country:
+          description: Country code (e.g. US, CA).
+          type: string
+          maxLength: 25
+        postalCode:
+          description: Postal or ZIP code.
+          type: string
+          maxLength: 50
+        phone:
+          description: Contact phone number in E.164 or NANP format.
+          type: string
+          maxLength: 17
+          pattern: ^(\+\d{1,3}[\s-]?)?\(?\d{3}\)?[\s-]?\d{3}[\s-]?\d{4}$
+        email:
+          description: Contact email address.
+          type: string
+          format: email
+          maxLength: 250
+    AmountObject:
+      type: object
+      required:
+      - amount
+      properties:
+        amount:
+          type: number
+          description: Amount of the transaction
+        currency:
+          type: string
+          enum:
+          - USD
+          - CAD
+          description: Currency of transaction
+    FeeObject:
       type: object
       properties:
-        ticketId:
-          $ref: "#/components/schemas/TicketId"
-        ticketDate:
-          description: Date when this ticket can be used for museum entry.
-          $ref: "#/components/schemas/Date"
-        ticketType:
-          $ref: "#/components/schemas/TicketType"
-        eventId:
-          description: Unique identifier for a special event. Required if purchasing tickets for the museum's special events.
-          $ref: "#/components/schemas/EventId"
+        feeAmount:
+          description: Flat fee amount charged on the transaction.
+          type: number
+        feeAuthResponse:
+          description: Authorization result for the fee transaction, if the fee was processed as a separate auth. Null if
+            no separate fee auth occurred.
+          type: string
+          nullable: true
+    AlternateFee:
+      type: object
+      properties:
+        feeType:
+          description: Category or label identifying the type of fee (e.g. surcharge).
+          type: string
+        feePercent:
+          description: Fee rate expressed as a decimal percentage (e.g. 0.025 = 2.5%).
+          type: number
+        amount:
+          description: Calculated fee amount in the transaction currency.
+          type: number
+        waived:
+          description: True if the surcharge was calculated but waived (not charged).
+          type: boolean
+        addedToTotalAmount:
+          description: True if the surcharge was rolled into the total amount charged to the cardholder; false if reported
+            separately.
+          type: boolean
+    PartnerFee:
+      type: object
+      properties:
+        amount:
+          description: Partner fee amount in the transaction currency.
+          type: number
+        feeType:
+          description: Category or label identifying the type of partner fee.
+          type: string
+    Level2Data:
+      type: object
+      properties:
+        customerRefNumber:
+          description: Customer or purchase order reference number for Level 2 interchange.
+          type: string
+        localTaxFlag:
+          description: True if local tax applies to this transaction.
+          type: boolean
+        purchaseCard:
+          description: True if the card is classified as a purchasing/procurement card eligible for Level 2/3 interchange.
+          type: boolean
+        shippingZip:
+          description: Destination ZIP code for the shipment, used in Level 2 data.
+          type: string
+        taxAmount:
+          description: Tax amount included in the transaction total for Level 2 data.
+          type: number
+    Level3Data:
+      type: object
+      properties:
+        description:
+          description: Textual description of the line item.
+          type: string
+          maxLength: 250
+        skuCode:
+          description: Stock-keeping unit code identifying the line-item product.
+          type: string
+          maxLength: 100
+        unitCost:
+          description: Per-unit cost of the line item.
+          type: number
+        price:
+          description: Extended line-item price (unit cost × quantity).
+          type: number
+        quantity:
+          description: Number of units for this line item.
+          type: number
+        commodityCode:
+          description: Industry commodity code classifying the product category.
+          type: string
+          maxLength: 12
+        unitOfMeasure:
+          description: Unit of measure for the line item (e.g. EA, LB, HR).
+          type: string
+          maxLength: 50
+        freightAmount:
+          description: Freight/shipping charge allocated to this line item.
+          type: number
+        dutyAmount:
+          description: Import duty or customs charge for this line item.
+          type: number
+        itemDiscountAmount:
+          description: Discount amount applied to this line item.
+          type: number
+        itemDiscountRate:
+          description: Discount rate for this line item expressed as a decimal.
+          type: number
+        taxAmount:
+          description: Tax amount for this line item.
+          type: number
+    CustomData:
+      type: object
+      properties:
+        name:
+          description: Name key of the custom data name/value pair.
+          type: string
+        value:
+          description: Value of the custom data name/value pair.
+          type: string
+    OrderData:
+      type: object
       required:
-        - ticketType
-        - ticketDate
-    MuseumTicketsConfirmation:
-      description: Details for a museum ticket after a successful purchase.
-      allOf:
-        - $ref: "#/components/schemas/Ticket"
-        - type: object
+      - orderId
+      properties:
+        orderId:
+          description: Merchant-assigned order identifier used to correlate this transaction to an order.
+          type: string
+        autoGenerateOrderId:
+          description: When true, the platform generates a unique order ID automatically; `orderId` is ignored.
+          type: boolean
+        orderIdIsUnique:
+          description: When true, the platform rejects the transaction if the same `orderId` has already been used — prevents
+            duplicate order processing.
+          type: boolean
+    ErrorResponse:
+      type: object
+      properties:
+        errors:
+          type: object
           properties:
             message:
-              $ref: "#/components/schemas/TicketMessage"
-            confirmationCode:
-              $ref: "#/components/schemas/TicketConfirmation"
+              description: Human-readable error message describing the failure.
+              type: string
+            details:
+              description: Additional technical detail or context for the error.
+              type: string
+    CardPaymentMethod:
+      type: object
+      required:
+      - card
+      properties:
+        card:
+          description: Card credentials — PAN, expiry, and optional CVV.
+          type: object
           required:
-            - message
-            - confirmationCode
-    TicketCodeImage:
-      description: Image of a ticket with a QR code used for museum or event entry.
-      type: string
-      format: binary
-    MuseumHours:
-      description: List of museum operating hours for a date range.
-      type: array
-      items:
-        $ref: "#/components/schemas/MuseumDailyHours"
-    MuseumDailyHours:
-      description: Daily operating hours for the museum.
+          - card
+          - expiry
+          properties:
+            card:
+              type: string
+              minLength: 12
+              maxLength: 19
+              description: Card Number
+            expiry:
+              type: string
+              pattern: ^(0[1-9]|1[0-2])\/\d{2}$
+              description: Card Expiration MM/YY
+            cvv:
+              type: string
+              minLength: 3
+              maxLength: 4
+              description: Card CVV/Security Code
+        billingAddress:
+          $ref: '#/components/schemas/Address'
+        accNickName:
+          description: Optional friendly label for this payment method in the vault.
+          type: string
+        isActive:
+          description: True if this vaulted payment method is active and available for use.
+          type: boolean
+    AchPaymentMethod:
       type: object
-      properties:
-        date:
-          description: Date the operating hours apply to.
-          $ref: "#/components/schemas/Date"
-          example: '2024-12-31'
-        timeOpen:
-          type: string
-          pattern: '^([01]\d|2[0-3]):?([0-5]\d)$'
-          description: Time the museum opens on a specific date. Uses 24 hour time format (`HH:mm`).
-          example: 09:00
-        timeClose:
-          description: Time the museum closes on a specific date. Uses 24 hour time format (`HH:mm`).
-          type: string
-          pattern: '^([01]\d|2[0-3]):?([0-5]\d)$'
-          example: 18:00
       required:
-        - date
-        - timeOpen
-        - timeClose
-    EventId:
-      description: Identifier for a special event.
-      type: string
-      format: uuid
-      example: 3be6453c-03eb-4357-ae5a-984a0e574a54
-    EventName:
-      type: string
-      description: Name of the special event.
-      example: Pirate Coding Workshop
-    EventLocation:
-      type: string
-      description: Location where the special event is held.
-      example: Computer Room
-    EventDescription:
-      type: string
-      description: Description of the special event.
-      example: Captain Blackbeard shares his love of the C...language. And possibly Arrrrr (R lang).
-    EventDates:
-      type: array
-      items:
-        $ref: "#/components/schemas/Date"
-      description: List of planned dates for the special event.
-    EventPrice:
-      description: Price of a ticket for the special event.
-      type: number
-      format: float
-      example: 25
-    SpecialEventFields:
-      type: object
+      - ach
       properties:
-        name:
-          $ref: "#/components/schemas/EventName"
-        location:
-          $ref: "#/components/schemas/EventLocation"
-        eventDescription:
-          $ref: "#/components/schemas/EventDescription"
-        dates:
-          $ref: "#/components/schemas/EventDates"
-        price:
-          $ref: "#/components/schemas/EventPrice"
-    SpecialEvent:
+        ach:
+          type: object
+          required:
+          - accountNumber
+          - routingNumber
+          properties:
+            accountNumber:
+              description: Bank account number for the ACH transaction.
+              type: string
+              minLength: 7
+              maxLength: 20
+            routingNumber:
+              description: ABA routing transit number identifying the financial institution.
+              type: string
+              minLength: 8
+              maxLength: 9
+            accountType:
+              description: 'Bank account type. Values: `Checking`, `Savings`.'
+              type: string
+              enum:
+              - Checking
+              - Savings
+        billingAddress:
+          $ref: '#/components/schemas/Address'
+        accNickName:
+          description: Optional friendly label for this payment method in the vault.
+          type: string
+        isActive:
+          description: True if this vaulted payment method is active and available for use.
+          type: boolean
+    TokenPaymentMethod:
       type: object
-      properties:
-        eventId:
-          $ref: "#/components/schemas/EventId"
-        name:
-          $ref: "#/components/schemas/EventName"
-        location:
-          $ref: "#/components/schemas/EventLocation"
-        eventDescription:
-          $ref: "#/components/schemas/EventDescription"
-        dates:
-          $ref: "#/components/schemas/EventDates"
-        price:
-          $ref: "#/components/schemas/EventPrice"
       required:
-        - name
-        - location
-        - eventDescription
-        - dates
-        - price
-    SpecialEventCollection:
-      description: List of upcoming special events.
-      type: array
-      items:
-        $ref: "#/components/schemas/SpecialEvent"
-    Error:
+      - token
+      properties:
+        token:
+          type: object
+          required:
+          - token
+          - expiry
+          properties:
+            token:
+              type: string
+              maxLength: 20
+              description: Tokenized string for Card details
+            expiry:
+              type: string
+              description: Card Expiration Month and Year
+            cvv:
+              description: Card CVV/security code accompanying the token.
+              type: string
+              minLength: 3
+              maxLength: 4
+        billingAddress:
+          $ref: '#/components/schemas/Address'
+    VaultPaymentMethod:
+      type: object
+      required:
+      - vault
+      properties:
+        vault:
+          type: object
+          required:
+          - paymentMethodId
+          properties:
+            paymentMethodId:
+              description: UUID of the vaulted payment method to charge.
+              type: string
+              pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+            cvv:
+              description: Card CVV/security code accompanying the vault token.
+              type: string
+              minLength: 3
+              maxLength: 4
+        billingAddress:
+          $ref: '#/components/schemas/Address'
+    CryptogramPaymentMethod:
+      type: object
+      required:
+      - cryptogram
+      properties:
+        cryptogram:
+          type: object
+          required:
+          - cryptogram
+          properties:
+            cryptogram:
+              type: string
+              description: Tokenized string that passes Card or Bank details
+        billingAddress:
+          $ref: '#/components/schemas/Address'
+    NetworkTokenPaymentMethod:
+      type: object
+      required:
+      - networkToken
+      properties:
+        networkToken:
+          type: object
+          required:
+          - token
+          - expiryMonth
+          - expiryYear
+          - secureCavvData
+          - tokenSource
+          properties:
+            token:
+              description: Network token (PAN substitute) issued by the card network for this digital wallet payment.
+              type: string
+              minLength: 13
+              maxLength: 20
+            expiryMonth:
+              description: Expiry month of the network token (1–12).
+              type: string
+              pattern: ^(0?[1-9]|1[0-2])$
+            expiryYear:
+              description: Four-digit expiry year of the network token.
+              type: string
+              pattern: ^(202[4-9]|20[3-9]\d|2[1-9]\d{2})$
+            secureCavvData:
+              description: Cryptogram Authentication Verification Value — the cryptographic proof from the digital wallet
+                (Apple Pay, Google Pay, Paze) that authenticates the network token.
+              type: string
+            eci:
+              description: Electronic Commerce Indicator — indicates the authentication level of the digital wallet transaction
+                (e.g. `05` = fully authenticated, `06` = attempted).
+              type: string
+              maxLength: 2
+            tokenType:
+              description: Network token type code (integer 1–9) as defined by the card network.
+              type: number
+              minimum: 1
+              maximum: 9
+            tokenSource:
+              description: 'Digital wallet provider that issued the network token. Values: `APPLEPAY`, `GOOGLEPAY`, `PAZE`,
+                `VISA`.'
+              type: string
+              enum:
+              - APPLEPAY
+              - GOOGLEPAY
+              - PAZE
+              - VISA
+        billingAddress:
+          $ref: '#/components/schemas/Address'
+    AchTokenPaymentMethod:
+      type: object
+      required:
+      - achToken
+      properties:
+        achToken:
+          type: object
+          required:
+          - token
+          properties:
+            token:
+              type: string
+              maxLength: 40
+              description: Tokenized string for ACH details
+        billingAddress:
+          $ref: '#/components/schemas/Address'
+    FleetCardPaymentMethod:
+      type: object
+      required:
+      - fleetCard
+      - sequenceNumber
+      - odometer
+      - driversLicenseNumber
+      properties:
+        fleetCard:
+          type: object
+          required:
+          - card
+          - expiry
+          additionalProperties: false
+          properties:
+            card:
+              description: Fleet card number (12–19 digits).
+              type: string
+              minLength: 12
+              maxLength: 19
+            expiry:
+              description: Fleet card expiration date in MM/YY format.
+              type: string
+              pattern: ^(0[1-9]|1[0-2])\/\d{2}$
+        sequenceNumber:
+          description: Five-digit driver or vehicle sequence number for fleet card transactions.
+          type: string
+          minLength: 5
+          maxLength: 5
+          pattern: ^\d{5}$
+        odometer:
+          description: Odometer reading at the time of the fleet transaction.
+          type: string
+          minLength: 1
+          maxLength: 9
+        driversLicenseNumber:
+          description: Driver's license number associated with the fleet card transaction.
+          type: string
+          minLength: 1
+          maxLength: 15
+        accNickName:
+          description: Optional friendly label for this payment method in the vault.
+          type: string
+        isActive:
+          description: True if this vaulted payment method is active and available for use.
+          type: boolean
+    PaymentMethodInput:
+      description: Exactly one payment method type must be provided.
+      oneOf:
+      - title: Card
+        type: object
+        required:
+        - card
+        properties:
+          card:
+            $ref: '#/components/schemas/CardPaymentMethod'
+        additionalProperties: false
+      - title: ACH
+        type: object
+        required:
+        - ach
+        properties:
+          ach:
+            $ref: '#/components/schemas/AchPaymentMethod'
+        additionalProperties: false
+      - title: Token
+        type: object
+        required:
+        - token
+        properties:
+          token:
+            $ref: '#/components/schemas/TokenPaymentMethod'
+        additionalProperties: false
+      - title: Vault
+        type: object
+        required:
+        - vault
+        properties:
+          vault:
+            $ref: '#/components/schemas/VaultPaymentMethod'
+        additionalProperties: false
+      - title: Cryptogram
+        type: object
+        required:
+        - cryptogram
+        properties:
+          cryptogram:
+            $ref: '#/components/schemas/CryptogramPaymentMethod'
+        additionalProperties: false
+      - title: Network Token
+        type: object
+        required:
+        - networkToken
+        properties:
+          networkToken:
+            $ref: '#/components/schemas/NetworkTokenPaymentMethod'
+        additionalProperties: false
+      - title: ACH Token
+        type: object
+        required:
+        - achToken
+        properties:
+          achToken:
+            $ref: '#/components/schemas/AchTokenPaymentMethod'
+        additionalProperties: false
+      - title: Fleet Card
+        type: object
+        required:
+        - fleetCard
+        properties:
+          fleetCard:
+            $ref: '#/components/schemas/FleetCardPaymentMethod'
+        additionalProperties: false
+    PaymentRequest:
+      type: object
+      required:
+      - amount
+      - paymentMethod
+      properties:
+        paymentType:
+          description: Transaction type label (e.g. Sale, Debit) for categorization.
+          type: string
+        amount:
+          $ref: '#/components/schemas/AmountObject'
+        paymentMethod:
+          $ref: '#/components/schemas/PaymentMethodInput'
+        orderId:
+          description: Merchant-assigned order identifier; auto-generated if omitted.
+          type: string
+        customerId:
+          description: Numeric ID of an existing customer record to associate with this transaction.
+          type: integer
+        level2:
+          $ref: '#/components/schemas/Level2Data'
+        level3:
+          type: array
+          items:
+            $ref: '#/components/schemas/Level3Data'
+        customData:
+          description: Optional custom name/value pairs to attach to this transaction for reporting or integration metadata.
+          type: array
+          items:
+            $ref: '#/components/schemas/CustomData'
+        surcharge:
+          $ref: '#/components/schemas/AlternateFee'
+        partnerFee:
+          $ref: '#/components/schemas/PartnerFee'
+        merchantCategory:
+          description: Merchant category code (MCC) associated with this merchant.
+          type: string
+        isSavePaymentMethod:
+          description: When true, the payment method used is automatically vaulted and `vaultCreated` will be true in the
+            response.
+          type: boolean
+        isCustomRecurring:
+          description: When true, marks this transaction as a custom (non-standard) recurring payment.
+          type: boolean
+        isReturnCustomData:
+          description: When true, the `customData` name/value pairs submitted with the request are echoed back in the response.
+          type: boolean
+        deviceId:
+          description: ID of the EMV terminal to use for card-present transactions.
+          type: string
+        paymentCompleteDate:
+          description: ISO 8601 timestamp of when the payment was finalized/captured.
+          type: string
+        orderData:
+          $ref: '#/components/schemas/OrderData'
+    RefundRequest:
+      type: object
+      required:
+      - paymentId
+      properties:
+        paymentId:
+          description: UUID of the original payment to refund.
+          type: string
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+        isACH:
+          description: Set to true when refunding an ACH payment.
+          type: boolean
+        amount:
+          $ref: '#/components/schemas/AmountObject'
+        orderData:
+          $ref: '#/components/schemas/OrderData'
+    CreditRequest:
+      type: object
+      required:
+      - amount
+      - paymentMethod
+      properties:
+        amount:
+          $ref: '#/components/schemas/AmountObject'
+        paymentMethod:
+          type: object
+          required:
+          - ach
+          properties:
+            ach:
+              $ref: '#/components/schemas/AchPaymentMethod'
+    StandaloneRefundRequest:
+      type: object
+      required:
+      - amount
+      - paymentMethod
+      properties:
+        amount:
+          $ref: '#/components/schemas/AmountObject'
+        paymentMethod:
+          $ref: '#/components/schemas/PaymentMethodInput'
+    RefundUnion:
+      oneOf:
+      - $ref: '#/components/schemas/RefundRequest'
+      - $ref: '#/components/schemas/CreditRequest'
+      - $ref: '#/components/schemas/StandaloneRefundRequest'
+      description: 'One of: RefundRequest, CreditRequest, StandaloneRefundRequest'
+    CreatePaymentMethodRequest:
+      type: object
+      required:
+      - paymentMethod
+      properties:
+        customerId:
+          description: Numeric ID of the customer to associate this payment method with.
+          type: number
+        paymentMethod:
+          $ref: '#/components/schemas/PaymentMethodInput'
+    CreateCustomerRequest:
+      type: object
+      required:
+      - firstName
+      properties:
+        firstName:
+          description: First name of the customer.
+          type: string
+        lastName:
+          description: Last name of the customer.
+          type: string
+        address:
+          description: Primary street address of the customer.
+          type: string
+        address2:
+          description: Secondary address line (suite, apartment, etc.).
+          type: string
+        postalCode:
+          description: Postal or ZIP code of the customer.
+          type: string
+        city:
+          description: City of the customer.
+          type: string
+        state:
+          description: State or province code of the customer.
+          type: string
+        country:
+          description: Country code of the customer (e.g. US, CA).
+          type: string
+        phone:
+          description: Contact phone number of the customer.
+          type: string
+        email:
+          description: Contact email address of the customer.
+          type: string
+        paymentMethods:
+          type: array
+          items:
+            $ref: '#/components/schemas/PaymentMethodInput'
+    ModifyCustomerRequest:
+      type: object
+      required:
+      - firstName
+      properties:
+        firstName:
+          description: Updated first name of the customer.
+          type: string
+        lastName:
+          description: Updated last name of the customer.
+          type: string
+        address:
+          description: Updated primary street address of the customer.
+          type: string
+        address2:
+          description: Updated secondary address line.
+          type: string
+        postalCode:
+          description: Updated postal or ZIP code of the customer.
+          type: string
+        city:
+          description: Updated city of the customer.
+          type: string
+        state:
+          description: Updated state or province code.
+          type: string
+        country:
+          description: Updated country code of the customer.
+          type: string
+        phone:
+          description: Updated contact phone number.
+          type: string
+        email:
+          description: Updated contact email address.
+          type: string
+    PaymentResponse:
       type: object
       properties:
-        type:
+        paymentId:
+          description: Unique identifier for this transaction. Pass this value to cancel, capture, refund, and search operations.
           type: string
-          example: object
-        title:
+        requestId:
+          description: Unique identifier for this API request, used for idempotency and support tracing.
           type: string
-          example: Validation failed
-
-  securitySchemes:
-    MuseumPlaceholderAuth:
-      type: http
-      scheme: basic
-  examples:
-    BuyGeneralTicketsRequestExample:
-      summary: General entry ticket
-      value:
-        ticketType: general
-        ticketDate: '2023-09-07'
-        email: todd@example.com
-    BuyEventTicketsRequestExample:
-      summary: Special event ticket
-      value:
-        ticketType: event
-        eventId: dad4bce8-f5cb-4078-a211-995864315e39
-        ticketDate: '2023-09-05'
-        email: todd@example.com
-    BuyGeneralTicketsResponseExample:
-      summary: General entry ticket
-      value:
-        message: Museum general entry ticket purchased
-        ticketId: 382c0820-0530-4f4b-99af-13811ad0f17a
-        ticketType: general
-        ticketDate: '2023-09-07'
-        confirmationCode: ticket-general-e5e5c6-dce78
-    BuyEventTicketsResponseExample:
-      summary: Special event ticket
-      value:
-        message: Museum special event ticket purchased
-        ticketId: b811f723-17b2-44f7-8952-24b03e43d8a9
-        eventName: Mermaid Treasure Identification and Analysis
-        ticketType: event
-        ticketDate: '2023-09-05'
-        confirmationCode: ticket-event-9c55eg-8v82a
-    CreateSpecialEventRequestExample:
-      summary: Create special event
-      value:
-        name: Mermaid Treasure Identification and Analysis
-        location: Under the seaaa 🦀 🎶 🌊.
-        eventDescription: Join us as we review and classify a rare collection of 20 thingamabobs, gadgets, gizmos, whoosits, and whatsits, kindly donated by Ariel.
-        dates:
-          - '2023-09-05'
-          - '2023-09-08'
-        price: 0
-    CreateSpecialEventResponseExample:
-      summary: Special event created
-      value:
-        eventId: dad4bce8-f5cb-4078-a211-995864315e39
-        name: Mermaid Treasure Identification and Analysis
-        location: Under the seaaa 🦀 🎶 🌊.
-        eventDescription: Join us as we review and classify a rare collection of 20 thingamabobs, gadgets, gizmos, whoosits, and whatsits, kindly donated by Ariel.
-        dates:
-          - '2023-09-05'
-          - '2023-09-08'
-        price: 30
-    GetSpecialEventResponseExample:
-      summary: Get special event
-      value:
-        eventId: 6744a0da-4121-49cd-8479-f8cc20526495
-        name: Time Traveler Tea Party
-        location: Temporal Tearoom
-        eventDescription: Sip tea with important historical figures.
-        dates:
-          - '2023-11-18'
-          - '2023-11-25'
-          - '2023-12-02'
-        price: 60
-    ListSpecialEventsResponseExample:
-      summary: List of special events
-      value:
-        - eventId: f3e0e76e-e4a8-466e-ab9c-ae36c15b8e97
-          name: Sasquatch Ballet
-          location: Seattle... probably
-          eventDescription: They're big, they're hairy, but they're also graceful. Come learn how the biggest feet can have the lightest touch.
-          dates:
-            - '2023-12-15'
-            - '2023-12-22'
-          price: 40
-        - eventId: 2f14374a-9c65-4ee5-94b7-fba66d893483
-          name: Solar Telescope Demonstration
-          location: Far from the sun.
-          eventDescription: Look at the sun without going blind!
-          dates:
-            - '2023-09-07'
-            - '2023-09-14'
-          price: 50
-        - eventId: 6aaa61ba-b2aa-4868-b803-603dbbf7bfdb
-          name: Cook like a Caveman
-          location: Fire Pit on East side
-          eventDescription: Learn to cook on an open flame.
-          dates:
-            - '2023-11-10'
-            - '2023-11-17'
-            - '2023-11-24'
-          price: 5
-        - eventId: 602b75e1-5696-4ab8-8c7a-f9e13580f910
-          name: Underwater Basket Weaving
-          location: Rec Center Pool next door.
-          eventDescription: Learn to weave baskets underwater.
-          dates:
-            - '2023-09-12'
-            - '2023-09-15'
-          price: 15
-        - eventId: dad4bce8-f5cb-4078-a211-995864315e39
-          name: Mermaid Treasure Identification and Analysis
-          location: Room Sea-12
-          eventDescription: Join us as we review and classify a rare collection of 20 thingamabobs, gadgets, gizmos, whoosits, and whatsits — kindly donated by Ariel.
-          dates:
-            - '2023-09-05'
-            - '2023-09-08'
-          price: 30
-        - eventId: 6744a0da-4121-49cd-8479-f8cc20526495
-          name: Time Traveler Tea Party
-          location: Temporal Tearoom
-          eventDescription: Sip tea with important historical figures.
-          dates:
-            - '2023-11-18'
-            - '2023-11-25'
-            - '2023-12-02'
-          price: 60
-        - eventId: 3be6453c-03eb-4357-ae5a-984a0e574a54
-          name: Pirate Coding Workshop
-          location: Computer Room
-          eventDescription: Captain Blackbeard shares his love of the C...language. And possibly Arrrrr (R lang).
-          dates:
-            - '2023-10-29'
-            - '2023-10-30'
-            - '2023-10-31'
-          price: 45
-        - eventId: 9d90d29a-2af5-4206-97d9-9ea9ceadcb78
-          name: Llama Street Art Through the Ages
-          location: Auditorium
-          eventDescription: Llama street art?! Alpaca my bags -- let's go!
-          dates:
-            - '2023-10-29'
-            - '2023-10-30'
-            - '2023-10-31'
-          price: 45
-        - eventId: a3c7b2c4-b5fb-4ef7-9322-00a919864957
-          name: The Great Parrot Debate
-          location: Outdoor Amphitheatre
-          eventDescription: See leading parrot minds discuss important geopolitical issues.
-          dates:
-            - '2023-11-03'
-            - '2023-11-10'
-          price: 35
-        - eventId: b92d46b7-4c5d-422b-87a5-287767e26f29
-          name: Eat a Bunch of Corn
-          location: Cafeteria
-          eventDescription: We accidentally bought too much corn. Please come eat it.
-          dates:
-            - '2023-11-10'
-            - '2023-11-17'
-            - '2023-11-24'
-          price: 5
-    UpdateSpecialEventRequestExample:
-      summary: Update special event request
-      value:
-        location: On the beach.
-        price: 15
-    UpdateSpecialEventResponseExample:
-      summary: Update special event
-      value:
-        eventId: dad4bce8-f5cb-4078-a211-995864315e39
-        name: Mermaid Treasure Identification and Analysis
-        location: On the beach.
-        eventDescription: Join us as we review and classify a rare collection of 20 thingamabobs, gadgets, gizmos, whoosits, and whatsits, kindly donated by Ariel.
-        dates:
-          - '2023-09-05'
-          - '2023-09-08'
-        price: 15
-    GetMuseumHoursResponseExample:
-      summary: Get hours response
-      value:
-        - date: "2023-09-11"
-          timeOpen: "09:00"
-          timeClose: "18:00"
-        - date: "2023-09-12"
-          timeOpen: "09:00"
-          timeClose: "18:00"
-        - date: "2023-09-13"
-          timeOpen: "09:00"
-          timeClose: "18:00"
-        - date: "2023-09-14"
-          timeOpen: "09:00"
-          timeClose: "18:00"
-        - date: "2023-09-15"
-          timeOpen: "10:00"
-          timeClose: "16:00"
-        - date: "2023-09-18"
-          timeOpen: "09:00"
-          timeClose: "18:00"
-        - date: "2023-09-19"
-          timeOpen: "09:00"
-          timeClose: "18:00"
-        - date: "2023-09-20"
-          timeOpen: "09:00"
-          timeClose: "18:00"
-        - date: "2023-09-21"
-          timeOpen: "09:00"
-          timeClose: "18:00"
-        - date: "2023-09-22"
-          timeOpen: "10:00"
-          timeClose: "16:00"
-  parameters:
-    PaginationPage:
-      name: page
-      in: query
-      description: Page number to retrieve.
-      schema:
-        type: integer
-        default: 1
-        example: 2
-    PaginationLimit:
-      name: limit
-      in: query
-      description: Number of days per page.
-      schema:
-        type: integer
-        default: 10
-        maximum: 30
-        example: 15
-    EventId:
-      name: eventId
-      in: path
-      description: Identifier for a special event.
-      required: true
-      schema:
-        type: string
-        format: uuid
-        example: dad4bce8-f5cb-4078-a211-995864315e39
-    StartDate:
-      name: startDate
-      in: query
-      description: Starting date to retrieve future operating hours from. Defaults to today's date.
-      schema:
-        type: string
-        format: date
-        example: '2023-02-23'
-    EndDate:
-      name: endDate
-      in: query
-      description: End of a date range to retrieve special events for. Defaults to 7 days after `startDate`.
-      schema:
-        type: string
-        format: date
-        example: '2023-04-18'
-    TicketId:
-      name: ticketId
-      in: path
-      description: Identifier for a ticket to a museum event. Used to generate ticket image.
-      required: true
-      schema:
-        type: string
-        format: uuid
-        example: a54a57ca-36f8-421b-a6b4-2e8f26858a4c
-  responses:
-    BadRequest:
-      description: Bad request.
-      content:
-        application/problem+json:
-          schema:
-            $ref: '#/components/schemas/Error'
-    NotFound:
-      description: Not found.
-      content:
-        application/problem+json:
-          schema:
-            $ref: '#/components/schemas/Error'
-    Unauthorized:
-      description: Unauthorized.
-      content:
-        application/problem+json:
-          schema:
-            $ref: '#/components/schemas/Error'
-tags:
-  - name: Operations
-    description: Operational information about the museum.
-  - name: Events
-    description: Special events hosted by the museum.
-  - name: Tickets
-    description: Museum tickets for general entrance or special events.
-security:
-  - MuseumPlaceholderAuth: []
+        authResponse:
+          description: 'Processor authorization result. Values: `APPROVED`, `DECLINED`, `VOIDED`, `CAPTURED`, `PENDING` (ACH
+            only), `ERROR`.'
+          type: string
+        responseCode:
+          description: Processor response code. `0` = approved; non-zero values indicate specific decline or error types.
+          type: string
+        responseMessage:
+          description: Human-readable message from the processor describing the authorization result.
+          type: string
+        amountApproved:
+          description: Amount approved by the processor, which may differ from the requested amount for partial approvals.
+          type: number
+        isPartial:
+          description: True if only part of the requested amount was approved by the processor.
+          type: boolean
+        orderId:
+          description: Order identifier associated with this transaction. Null if not provided and not auto-generated.
+          type: string
+          nullable: true
+        customerId:
+          description: Numeric ID of the associated customer record. Null if no customer is linked.
+          type: integer
+          nullable: true
+        batchNumber:
+          description: Identifier of the settlement batch this transaction belongs to. Null until the transaction is settled
+            via `POST /batches`.
+          type: string
+          nullable: true
+        subscriptionId:
+          description: UUID of the subscription this transaction belongs to, if applicable.
+          type: string
+          nullable: true
+        fee:
+          $ref: '#/components/schemas/FeeObject'
+        token:
+          description: Platform vault token representing the payment method used. Can be passed as a `TokenPaymentMethod`
+            in future payment calls. Null for ACH transactions.
+          type: string
+          nullable: true
+        accountResponseData:
+          description: AVS and CVV verification result codes returned by the processor.
+          type: object
+          properties:
+            avs:
+              description: AVS (Address Verification Service) result code returned by the processor.
+              type: string
+            cvv:
+              description: CVV verification result code returned by the processor.
+              type: string
+        customData:
+          description: Custom name/value pairs submitted with the request, echoed back when isReturnCustomData is true.
+          type: array
+          items:
+            $ref: '#/components/schemas/CustomData'
+    RefundResponse:
+      type: object
+      properties:
+        paymentId:
+          description: UUID of the refund transaction.
+          type: string
+        parentPaymentId:
+          description: The `paymentId` of the original transaction this refund is applied against. Null for standalone refunds.
+          type: string
+          nullable: true
+        requestId:
+          description: Unique identifier for this API request.
+          type: string
+        orderId:
+          description: Order identifier associated with this refund. Null if not provided.
+          type: string
+          nullable: true
+        amountApproved:
+          description: Amount approved for the refund.
+          type: number
+        batchNumber:
+          description: Settlement batch number this refund belongs to. Null until settled.
+          type: string
+          nullable: true
+        authResponse:
+          description: 'Processor authorization result for the refund. Values: `APPROVED`, `DECLINED`, `ERROR`.'
+          type: string
+        responseCode:
+          description: Processor response code for the refund operation.
+          type: string
+        responseMessage:
+          description: Human-readable message from the processor describing the refund result.
+          type: string
+        isPartial:
+          description: True if only part of the requested refund amount was approved.
+          type: boolean
+        fee:
+          $ref: '#/components/schemas/FeeObject'
+        customerId:
+          description: Numeric ID of the customer associated with this refund.
+          type: integer
+        accountResponseData:
+          description: AVS and CVV verification result codes returned by the processor.
+          type: object
+          properties:
+            avs:
+              description: AVS result code returned by the processor.
+              type: string
+            cvv:
+              description: CVV verification result code returned by the processor.
+              type: string
+        subscriptionId:
+          description: UUID of the subscription this refund is associated with, if applicable.
+          type: string
+        token:
+          description: Vault token representing the payment method used for the refund.
+          type: string
+    PaymentMethodResponse:
+      type: object
+      properties:
+        paymentMethodId:
+          description: UUID of the newly created or updated vaulted payment method.
+          type: string
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+        customerId:
+          description: Numeric ID of the customer associated with this payment method. Null if not linked.
+          type: integer
+          nullable: true
+        requestId:
+          description: Unique identifier for this API request.
+          type: string
+    CustomerResponse:
+      type: object
+      properties:
+        customerId:
+          description: Numeric ID of the newly created customer record.
+          type: integer
+        paymentMethodId:
+          description: Array of UUIDs of vaulted payment methods associated with this customer. Null if none.
+          type: array
+          items:
+            type: string
+          nullable: true
+        requestId:
+          description: Unique identifier for this API request.
+          type: string
+    VaultRecord:
+      type: object
+      properties:
+        paymentMethodId:
+          description: UUID of this vaulted payment method.
+          type: string
+        accNickName:
+          description: Optional friendly label assigned to this payment method.
+          type: string
+        isActive:
+          description: True if this vaulted payment method is active and available for use.
+          type: boolean
+        cardType:
+          description: Card network/brand of the vaulted card.
+          type: string
+        maskedPan:
+          description: Card number with middle digits masked. Shows first 6 and last 4 digits (e.g. `411111XXXXXX1111`). Length
+            varies by card brand.
+          type: string
+        expiry:
+          description: Card expiration date in MM/YY format.
+          type: string
+        token:
+          description: Platform vault token representing this payment method.
+          type: string
+          maxLength: 16
+        accountNumber:
+          description: Masked ACH bank account number for this vaulted entry.
+          type: string
+        routingNumber:
+          description: ABA routing transit number for this vaulted ACH entry.
+          type: string
+        accountType:
+          description: 'Bank account type for ACH entries. Values: `Checking`, `Savings`.'
+          type: string
+          enum:
+          - Checking
+          - Savings
+        vaultCreated:
+          description: True if a new vault entry was created as a side effect of the transaction (e.g. when `isSavePaymentMethod`
+            is true).
+          type: string
+        sequenceNumber:
+          description: Fleet card driver/vehicle sequence number for this vaulted fleet entry.
+          type: string
+        odometer:
+          description: Odometer reading stored for this vaulted fleet entry.
+          type: string
+        driversLicenseNumber:
+          description: Driver's license number stored for this vaulted fleet entry.
+          type: string
+        billingAddress:
+          $ref: '#/components/schemas/Address'
+    CustomerRecord:
+      type: object
+      properties:
+        customerId:
+          description: Unique numeric identifier for this customer.
+          type: integer
+        firstName:
+          description: First name of the customer.
+          type: string
+        lastName:
+          description: Last name of the customer.
+          type: string
+        address:
+          description: Primary street address of the customer.
+          type: string
+        address2:
+          description: Secondary address line of the customer.
+          type: string
+        city:
+          description: City of the customer.
+          type: string
+        postalCode:
+          description: Postal or ZIP code of the customer.
+          type: string
+        state:
+          description: State or province code of the customer.
+          type: string
+        country:
+          description: Country code of the customer.
+          type: string
+        phone:
+          description: Contact phone number of the customer.
+          type: string
+        email:
+          description: Contact email address of the customer.
+          type: string
+        vaults:
+          description: Array of vaulted payment methods associated with this customer.
+          type: array
+          items:
+            $ref: '#/components/schemas/VaultRecord'
+        subscriptions:
+          description: Array of active and inactive subscriptions for this customer.
+          type: array
+          items:
+            type: object
+            properties:
+              subscriptionId:
+                description: UUID of this subscription.
+                type: string
+              frequency:
+                description: Billing frequency of this subscription.
+                type: string
+              amount:
+                description: Per-cycle charge amount for this subscription.
+                type: number
+              active:
+                description: True if this subscription is currently active.
+                type: boolean
+              startDate:
+                type: string
+                description: Subscription start date (MM/DD/YYYY)
+                pattern: ^\d{2}/\d{2}/\d{4}$
+                example: 02/01/2024
+              endDate:
+                type: string
+                description: Subscription end date (MM/DD/YYYY)
+                pattern: ^\d{2}/\d{2}/\d{4}$
+                example: 02/01/2025
+    CustomerListResponse:
+      type: array
+      items:
+        $ref: '#/components/schemas/CustomerRecord'
+    ModifyCustomerResponse:
+      type: object
+      properties:
+        customerId:
+          description: Numeric ID of the updated customer record.
+          type: integer
+        requestId:
+          description: Unique identifier for this API request.
+          type: string

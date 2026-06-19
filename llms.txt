@@ -1,0 +1,38 @@
+# Payment Services Developer Portal
+
+> REST API documentation and developer guides for the Payment Services platform — a payment processing system supporting cards, ACH, vaulting, subscriptions, refunds, and payment links.
+
+## APIs
+
+- [Payment Services API v1](/apis/openapi.yaml): Full OpenAPI 3.0 specification. Covers payments (sale, authorize, capture, void), refunds, subscriptions, vault/payment methods, customers, and payment links. Authentication via OAuth2 Client Credentials.
+
+## Documentation
+
+- [Getting Started](/docs/guides/): Authentication setup, credential requirements, sandbox vs production environments, and first API call walkthrough.
+- [Tutorials](/docs/tutorials/): End-to-end implementation flows — card payments, vaulting, subscriptions, refunds, payment links.
+- [Overview](/index.md): Portal navigation and API catalog.
+
+## Key concepts for agents
+
+### Authentication
+All requests require two credentials:
+1. Bearer token — obtained via OAuth2 Client Credentials at `/oauth2/token` using Basic Auth (base64 of `client_id:client_secret`). Expires after 3600 seconds.
+2. `merchantToken` header — a GUID identifying the merchant on every request.
+
+### Environments
+- Sandbox: `https://sandbox.api.example.com/v1` (token: `https://sandbox.api.example.com/oauth2/token`)
+- Production: `https://api.example.com/v1` (token: `https://api.example.com/oauth2/token`)
+
+### Error handling
+Standard HTTP status codes. Error bodies: `{ "errors": { "message": "...", "details": "..." } }`.
+
+### Pagination
+List endpoints use `page` (1-based) and `pageSize` parameters. No `totalPages` envelope — stop when result count < pageSize.
+
+### Idempotency
+Supply a `requestId` UUID header to enable idempotency and request tracing.
+
+## Machine-readable specifications
+
+OpenAPI 3.0 specs are available at:
+- `/apis/openapi.yaml` — Payment Services API v1
