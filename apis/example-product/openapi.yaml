@@ -27,7 +27,6 @@ paths:
     get:
       operationId: listWidgets
       summary: List widgets
-      description: Returns the list of widgets available to the authenticated caller.
       tags:
         - Widgets
       responses:
