@@ -1,0 +1,18 @@
+# =============================================================================
+# Agent-Ready ruleset
+# =============================================================================
+# The single definition of our documentation quality bar. A spec that passes
+# this is clean enough for an autonomous AI agent to integrate against with no
+# human spec-reading — which makes it precise enough for developers too.
+#
+# Referenced in exactly one place each:
+#   - root redocly.yaml `extends`        -> daily lint and CI gate
+#   - scorecardClassic `Agent-Ready` lvl -> the publish gate
+# Edit the bar HERE; both consumers pick it up.
+#
+# Layered on top of `recommended-strict` (all recommended rules, warnings
+# promoted to errors). Below we add the gaps recommended-strict does NOT cover.
+# =============================================================================
+
+extends:
+  - recommended-strict

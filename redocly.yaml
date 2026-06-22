@@ -66,6 +66,9 @@ scorecardClassic:
     - name: Reference-Ready
       extends:
         - recommended
-    - name: Agent-Ready
+    - name: OpenAPI-Ready
       extends:
-        - ./rulesets/agent-ready.yaml
+        - ./rulesets/openapi-rules.yaml
+    - name: Markdown-Ready
+      extends:
+        - ./rulesets/markdown-rules.yaml
