@@ -1,702 +1,438 @@
-openapi: 3.1.0
+openapi: 3.0.3
+
 info:
-  title: Redocly Museum API
-  description: Imaginary, but delightful Museum API for interacting with museum services and information. Built with love by Redocly.
-  version: 1.2.1
-  termsOfService: 'https://redocly.com/subscription-agreement/'
-  contact:
-    email: team@redocly.com
-    url: "https://redocly.com/docs/cli/"
-  license:
-    name: MIT
-    url: "https://opensource.org/license/mit/"
+  title: Payment Services API
+  version: 1.0.0
+  description: |-
+    ## Overview
+
+    A REST API for processing payments, managing customers, and handling refunds.
+
+    ## Authentication
+
+    All requests require a bearer token obtained via OAuth 2.0 Client Credentials.
+
+    ```bash
+    curl -X POST https://sandbox.api.example.com/oauth2/token \
+      -H "Authorization: Basic BASE64_CLIENT_ID_SECRET" \
+      -H "Content-Type: application/x-www-form-urlencoded" \
+      -d "grant_type=client_credentials&scope=api_scope"
+    ```
+
+    Pass the token on every request:
+
+    ```bash
+    curl -X POST https://sandbox.api.example.com/v1/payments \
+      -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+      -H "Content-Type: application/json" \
+      -H "clientToken: YOUR_CLIENT_TOKEN"
+    ```
+
+    ## Errors
+
+    Standard HTTP status codes are used. Error responses include a `code` and `message`.
+
+    ```json
+    {
+      "code": "NOT_FOUND",
+      "message": "The requested resource does not exist."
+    }
+    ```
+
 servers:
-  - url: "https://redocly.com/_mock/docs/openapi/museum-api"
+  - url: https://sandbox.api.example.com/v1
+    description: Sandbox
+  - url: https://api.example.com/v1
+    description: Production
+
+x-tagGroups:
+  - name: Payments
+    tags:
+      - Payments
+      - Refunds
+  - name: Vault
+    tags:
+      - PaymentMethods
+  - name: Customers
+    tags:
+      - Customers
+
+tags:
+  - name: Customers
+    description: Create and manage customer profiles.
+  - name: PaymentMethods
+    description: Store and manage payment instruments in the vault.
+  - name: Payments
+    description: Process payment transactions.
+  - name: Refunds
+    description: Issue refunds against completed payments.
+
+security:
+  - bearerAuth: []
+
 paths:
-  /museum-hours:
-    get:
-      summary: Get museum hours
-      description: Get upcoming museum operating hours.
-      operationId: getMuseumHours
-      tags:
-        - Operations
-      parameters:
-        - $ref: "#/components/parameters/StartDate"
-        - $ref: "#/components/parameters/PaginationPage"
-        - $ref: "#/components/parameters/PaginationLimit"
-      responses:
-        "200":
-          description: Success.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/MuseumHours"
-              examples:
-                default_example:
-                  $ref: "#/components/examples/GetMuseumHoursResponseExample"
-        "400":
-          $ref: '#/components/responses/BadRequest'
-        "404":
-          $ref: '#/components/responses/NotFound'
-  /special-events:
+  /customers:
     post:
-      summary: Create special events
-      description: Creates a new special event for the museum.
-      operationId: createSpecialEvent
+      operationId: createCustomer
+      summary: Create a customer
       tags:
-        - Events
+        - Customers
+      description: Creates a new customer profile.
+      parameters:
+        - $ref: '#/components/parameters/clientToken'
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/SpecialEvent"
-            examples:
-              default_example:
-                $ref: "#/components/examples/CreateSpecialEventRequestExample"
+              $ref: '#/components/schemas/CustomerRequest'
+            example:
+              name: Jane Doe
+              email: jane@example.com
       responses:
-        "201":
-          description: Created.
+        '200':
+          description: Customer created successfully.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/SpecialEvent"
-              examples:
-                default_example:
-                  $ref: "#/components/examples/CreateSpecialEventResponseExample"
-        "400":
+                $ref: '#/components/schemas/Customer'
+              example:
+                customerId: cust_abc123
+                name: Jane Doe
+                email: jane@example.com
+        '400':
           $ref: '#/components/responses/BadRequest'
-        "404":
-          $ref: '#/components/responses/NotFound'
+
+  /customers/{customerId}:
     get:
-      summary: List special events
-      description: Return a list of upcoming special events at the museum.
-      operationId: listSpecialEvents
+      operationId: getCustomer
+      summary: Get a customer
       tags:
-        - Events
+        - Customers
+      description: Returns the profile for a single customer.
       parameters:
-        - $ref: "#/components/parameters/StartDate"
-        - $ref: "#/components/parameters/EndDate"
-        - $ref: "#/components/parameters/PaginationPage"
-        - $ref: "#/components/parameters/PaginationLimit"
+        - $ref: '#/components/parameters/clientToken'
+        - name: customerId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The unique customer identifier.
       responses:
-        "200":
-          description: Success.
+        '200':
+          description: Customer found.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/SpecialEventCollection"
-              examples:
-                default_example:
-                  $ref: "#/components/examples/ListSpecialEventsResponseExample"
-        "400":
-          $ref: '#/components/responses/BadRequest'
-        "404":
+                $ref: '#/components/schemas/Customer'
+              example:
+                customerId: cust_abc123
+                name: Jane Doe
+                email: jane@example.com
+        '404':
           $ref: '#/components/responses/NotFound'
-  /special-events/{eventId}:
-    get:
-      summary: Get special event
-      description: Get details about a special event.
-      operationId: getSpecialEvent
+
+  /paymentmethods:
+    post:
+      operationId: createPaymentMethod
+      summary: Store a payment method
       tags:
-        - Events
+        - PaymentMethods
+      description: Vaults a payment instrument for future use.
       parameters:
-        - $ref: "#/components/parameters/EventId"
-      responses:
-        "200":
-          description: Success.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/SpecialEvent"
-              examples:
-                default_example:
-                  $ref: "#/components/examples/GetSpecialEventResponseExample"
-        "400":
-          $ref: '#/components/responses/BadRequest'
-        "404":
-          $ref: '#/components/responses/NotFound'
-    patch:
-      summary: Update special event
-      description: Update the details of a special event.
-      operationId: updateSpecialEvent
-      tags:
-        - Events
-      parameters:
-        - $ref: "#/components/parameters/EventId"
+        - $ref: '#/components/parameters/clientToken'
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/SpecialEventFields"
-            examples:
-              default_example:
-                $ref: "#/components/examples/UpdateSpecialEventRequestExample"
+              $ref: '#/components/schemas/PaymentMethodRequest'
+            example:
+              customerId: cust_abc123
+              type: card
+              card:
+                number: '4111111111111111'
+                expiry: 12/27
+                cvv: '737'
       responses:
-        "200":
-          description: Success.
+        '200':
+          description: Payment method stored.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/SpecialEvent"
-              examples:
-                default_example:
-                  $ref: "#/components/examples/UpdateSpecialEventResponseExample"
-        "400":
+                $ref: '#/components/schemas/PaymentMethod'
+              example:
+                paymentMethodId: pm_xyz789
+                customerId: cust_abc123
+                type: card
+                last4: '1111'
+        '400':
           $ref: '#/components/responses/BadRequest'
-        "404":
-          $ref: '#/components/responses/NotFound'
-    delete:
-      summary: Delete special event
-      description: Delete a special event from the collection. Allows museum to cancel planned events.
-      operationId: deleteSpecialEvent
-      tags:
-        - Events
-      parameters:
-        - $ref: "#/components/parameters/EventId"
-      responses:
-        "204":
-          description: Success - no content.
-        "400":
-          $ref: '#/components/responses/BadRequest'
-        "401":
-          $ref: '#/components/responses/Unauthorized'
-        "404":
-          $ref: '#/components/responses/NotFound'
-  /tickets:
+
+  /payments:
     post:
-      summary: Buy museum tickets
-      description: Purchase museum tickets for general entry or special events.
-      operationId: buyMuseumTickets
+      operationId: createPayment
+      summary: Create a payment
       tags:
-        - Tickets
+        - Payments
+      description: Processes a payment transaction.
+      parameters:
+        - $ref: '#/components/parameters/clientToken'
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/BuyMuseumTickets"
-            examples:
-              general_entry:
-                $ref: "#/components/examples/BuyGeneralTicketsRequestExample"
-              event_entry:
-                $ref: "#/components/examples/BuyEventTicketsRequestExample"
+              $ref: '#/components/schemas/PaymentRequest'
+            example:
+              amount: 49.99
+              currency: USD
+              paymentMethodId: pm_xyz789
+              customerId: cust_abc123
       responses:
-        "201":
-          description: Created.
+        '200':
+          description: Payment processed.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/MuseumTicketsConfirmation"
-              examples:
-                general_entry:
-                  $ref: "#/components/examples/BuyGeneralTicketsResponseExample"
-                event_entry:
-                  $ref: "#/components/examples/BuyEventTicketsResponseExample"
-        "400":
+                $ref: '#/components/schemas/Payment'
+              example:
+                paymentId: pay_def456
+                amount: 49.99
+                currency: USD
+                status: APPROVED
+                customerId: cust_abc123
+                paymentMethodId: pm_xyz789
+        '400':
           $ref: '#/components/responses/BadRequest'
-        "404":
-          $ref: '#/components/responses/NotFound'
-  /tickets/{ticketId}/qr:
-    get:
-      summary: Get ticket QR code
-      description: Return an image of your ticket with scannable QR code. Used for event entry.
-      operationId: getTicketCode
-      tags:
-        - Tickets
-      parameters:
-        - $ref: "#/components/parameters/TicketId"
-      responses:
-        "200":
-          description: Scannable event ticket in image format.
-          content:
-            image/png:
-              schema:
-                $ref: "#/components/schemas/TicketCodeImage"
-        "400":
-          $ref: '#/components/responses/BadRequest'
-        "404":
-          $ref: '#/components/responses/NotFound'
-webhooks:
-  publishNewEvent:
+        '422':
+          $ref: '#/components/responses/Declined'
+
+  /refunds:
     post:
-      summary: New special event added
-      description: Publish details of a new or updated event.
-      operationId: publishNewEvent
+      operationId: createRefund
+      summary: Create a refund
       tags:
-        - Events
+        - Refunds
+      description: Issues a full or partial refund against a completed payment.
+      parameters:
+        - $ref: '#/components/parameters/clientToken'
       requestBody:
+        required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/SpecialEvent"
-            examples:
-              default_example:
-                $ref: "#/components/examples/GetSpecialEventResponseExample"
+              $ref: '#/components/schemas/RefundRequest'
+            example:
+              paymentId: pay_def456
+              amount: 49.99
       responses:
-        "202":
-          description: Data accepted.
+        '200':
+          description: Refund issued.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Refund'
+              example:
+                refundId: ref_ghi012
+                paymentId: pay_def456
+                amount: 49.99
+                status: APPROVED
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
 
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+
+  parameters:
+    clientToken:
+      name: clientToken
+      in: header
+      required: true
+      description: Your unique client identifier (GUID).
+      schema:
+        type: string
+
   schemas:
-    TicketType:
-      description: Type of ticket being purchased. Use `general` for regular museum entry and `event` for tickets to special events.
-      type: string
-      enum:
-        - event
-        - general
-      example: event
-    Date:
-      type: string
-      format: date
-      example: '2023-10-29'
-    Email:
-      description: Email address for ticket purchaser.
-      type: string
-      format: email
-      example: museum-lover@example.com
-    BuyMuseumTickets:
-      description: Data to purchase a ticket.
+    CustomerRequest:
       type: object
-      allOf:
-        - type: object
-          properties:
-            email:
-              $ref: "#/components/schemas/Email"
-        - $ref: "#/components/schemas/Ticket"
-    TicketMessage:
-      description: Confirmation message after a ticket purchase.
-      type: string
-      example: Museum general entry ticket purchased
-    TicketId:
-      description: Unique identifier for museum ticket. Generated when purchased.
-      type: string
-      format: uuid
-      example: a54a57ca-36f8-421b-a6b4-2e8f26858a4c
-    TicketConfirmation:
-      description: Unique confirmation code used to verify ticket purchase.
-      type: string
-      example: 'ticket-event-a98c8f-7eb12'
-    Ticket:
-      description: Ticket for museum entry, can be general admission or special event.
-      type: object
-      properties:
-        ticketId:
-          $ref: "#/components/schemas/TicketId"
-        ticketDate:
-          description: Date when this ticket can be used for museum entry.
-          $ref: "#/components/schemas/Date"
-        ticketType:
-          $ref: "#/components/schemas/TicketType"
-        eventId:
-          description: Unique identifier for a special event. Required if purchasing tickets for the museum's special events.
-          $ref: "#/components/schemas/EventId"
-      required:
-        - ticketType
-        - ticketDate
-    MuseumTicketsConfirmation:
-      description: Details for a museum ticket after a successful purchase.
-      allOf:
-        - $ref: "#/components/schemas/Ticket"
-        - type: object
-          properties:
-            message:
-              $ref: "#/components/schemas/TicketMessage"
-            confirmationCode:
-              $ref: "#/components/schemas/TicketConfirmation"
-          required:
-            - message
-            - confirmationCode
-    TicketCodeImage:
-      description: Image of a ticket with a QR code used for museum or event entry.
-      type: string
-      format: binary
-    MuseumHours:
-      description: List of museum operating hours for a date range.
-      type: array
-      items:
-        $ref: "#/components/schemas/MuseumDailyHours"
-    MuseumDailyHours:
-      description: Daily operating hours for the museum.
-      type: object
-      properties:
-        date:
-          description: Date the operating hours apply to.
-          $ref: "#/components/schemas/Date"
-          example: '2024-12-31'
-        timeOpen:
-          type: string
-          pattern: '^([01]\d|2[0-3]):?([0-5]\d)$'
-          description: Time the museum opens on a specific date. Uses 24 hour time format (`HH:mm`).
-          example: 09:00
-        timeClose:
-          description: Time the museum closes on a specific date. Uses 24 hour time format (`HH:mm`).
-          type: string
-          pattern: '^([01]\d|2[0-3]):?([0-5]\d)$'
-          example: 18:00
-      required:
-        - date
-        - timeOpen
-        - timeClose
-    EventId:
-      description: Identifier for a special event.
-      type: string
-      format: uuid
-      example: 3be6453c-03eb-4357-ae5a-984a0e574a54
-    EventName:
-      type: string
-      description: Name of the special event.
-      example: Pirate Coding Workshop
-    EventLocation:
-      type: string
-      description: Location where the special event is held.
-      example: Computer Room
-    EventDescription:
-      type: string
-      description: Description of the special event.
-      example: Captain Blackbeard shares his love of the C...language. And possibly Arrrrr (R lang).
-    EventDates:
-      type: array
-      items:
-        $ref: "#/components/schemas/Date"
-      description: List of planned dates for the special event.
-    EventPrice:
-      description: Price of a ticket for the special event.
-      type: number
-      format: float
-      example: 25
-    SpecialEventFields:
-      type: object
-      properties:
-        name:
-          $ref: "#/components/schemas/EventName"
-        location:
-          $ref: "#/components/schemas/EventLocation"
-        eventDescription:
-          $ref: "#/components/schemas/EventDescription"
-        dates:
-          $ref: "#/components/schemas/EventDates"
-        price:
-          $ref: "#/components/schemas/EventPrice"
-    SpecialEvent:
-      type: object
-      properties:
-        eventId:
-          $ref: "#/components/schemas/EventId"
-        name:
-          $ref: "#/components/schemas/EventName"
-        location:
-          $ref: "#/components/schemas/EventLocation"
-        eventDescription:
-          $ref: "#/components/schemas/EventDescription"
-        dates:
-          $ref: "#/components/schemas/EventDates"
-        price:
-          $ref: "#/components/schemas/EventPrice"
       required:
         - name
-        - location
-        - eventDescription
-        - dates
-        - price
-    SpecialEventCollection:
-      description: List of upcoming special events.
-      type: array
-      items:
-        $ref: "#/components/schemas/SpecialEvent"
+        - email
+      properties:
+        name:
+          type: string
+          description: Full name of the customer.
+        email:
+          type: string
+          format: email
+          description: Customer email address.
+
+    Customer:
+      type: object
+      properties:
+        customerId:
+          type: string
+          description: Unique customer identifier.
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+
+    PaymentMethodRequest:
+      type: object
+      required:
+        - type
+      properties:
+        customerId:
+          type: string
+          description: Associate this payment method with a customer.
+        type:
+          type: string
+          enum:
+            - card
+            - ach
+          description: Payment instrument type.
+        card:
+          type: object
+          properties:
+            number:
+              type: string
+              description: Card number.
+            expiry:
+              type: string
+              description: Expiration date in MM/YY format.
+            cvv:
+              type: string
+              description: Card verification value.
+
+    PaymentMethod:
+      type: object
+      properties:
+        paymentMethodId:
+          type: string
+          description: Unique vault identifier.
+        customerId:
+          type: string
+        type:
+          type: string
+          enum:
+            - card
+            - ach
+        last4:
+          type: string
+          description: Last 4 digits of the card or account number.
+
+    PaymentRequest:
+      type: object
+      required:
+        - amount
+        - currency
+        - paymentMethodId
+      properties:
+        amount:
+          type: number
+          description: Amount to charge.
+        currency:
+          type: string
+          description: ISO 4217 currency code.
+          example: USD
+        paymentMethodId:
+          type: string
+          description: Vaulted payment method to charge.
+        customerId:
+          type: string
+          description: Customer associated with this payment.
+
+    Payment:
+      type: object
+      properties:
+        paymentId:
+          type: string
+          description: Unique payment identifier.
+        amount:
+          type: number
+        currency:
+          type: string
+        status:
+          type: string
+          enum:
+            - APPROVED
+            - DECLINED
+        customerId:
+          type: string
+        paymentMethodId:
+          type: string
+
+    RefundRequest:
+      type: object
+      required:
+        - paymentId
+      properties:
+        paymentId:
+          type: string
+          description: The payment to refund.
+        amount:
+          type: number
+          description: Amount to refund. Defaults to the full payment amount if omitted.
+
+    Refund:
+      type: object
+      properties:
+        refundId:
+          type: string
+          description: Unique refund identifier.
+        paymentId:
+          type: string
+        amount:
+          type: number
+        status:
+          type: string
+          enum:
+            - APPROVED
+            - DECLINED
+
     Error:
       type: object
       properties:
-        type:
+        code:
           type: string
-          example: object
-        title:
+        message:
           type: string
-          example: Validation failed
 
-  securitySchemes:
-    MuseumPlaceholderAuth:
-      type: http
-      scheme: basic
-  examples:
-    BuyGeneralTicketsRequestExample:
-      summary: General entry ticket
-      value:
-        ticketType: general
-        ticketDate: '2023-09-07'
-        email: todd@example.com
-    BuyEventTicketsRequestExample:
-      summary: Special event ticket
-      value:
-        ticketType: event
-        eventId: dad4bce8-f5cb-4078-a211-995864315e39
-        ticketDate: '2023-09-05'
-        email: todd@example.com
-    BuyGeneralTicketsResponseExample:
-      summary: General entry ticket
-      value:
-        message: Museum general entry ticket purchased
-        ticketId: 382c0820-0530-4f4b-99af-13811ad0f17a
-        ticketType: general
-        ticketDate: '2023-09-07'
-        confirmationCode: ticket-general-e5e5c6-dce78
-    BuyEventTicketsResponseExample:
-      summary: Special event ticket
-      value:
-        message: Museum special event ticket purchased
-        ticketId: b811f723-17b2-44f7-8952-24b03e43d8a9
-        eventName: Mermaid Treasure Identification and Analysis
-        ticketType: event
-        ticketDate: '2023-09-05'
-        confirmationCode: ticket-event-9c55eg-8v82a
-    CreateSpecialEventRequestExample:
-      summary: Create special event
-      value:
-        name: Mermaid Treasure Identification and Analysis
-        location: Under the seaaa 🦀 🎶 🌊.
-        eventDescription: Join us as we review and classify a rare collection of 20 thingamabobs, gadgets, gizmos, whoosits, and whatsits, kindly donated by Ariel.
-        dates:
-          - '2023-09-05'
-          - '2023-09-08'
-        price: 0
-    CreateSpecialEventResponseExample:
-      summary: Special event created
-      value:
-        eventId: dad4bce8-f5cb-4078-a211-995864315e39
-        name: Mermaid Treasure Identification and Analysis
-        location: Under the seaaa 🦀 🎶 🌊.
-        eventDescription: Join us as we review and classify a rare collection of 20 thingamabobs, gadgets, gizmos, whoosits, and whatsits, kindly donated by Ariel.
-        dates:
-          - '2023-09-05'
-          - '2023-09-08'
-        price: 30
-    GetSpecialEventResponseExample:
-      summary: Get special event
-      value:
-        eventId: 6744a0da-4121-49cd-8479-f8cc20526495
-        name: Time Traveler Tea Party
-        location: Temporal Tearoom
-        eventDescription: Sip tea with important historical figures.
-        dates:
-          - '2023-11-18'
-          - '2023-11-25'
-          - '2023-12-02'
-        price: 60
-    ListSpecialEventsResponseExample:
-      summary: List of special events
-      value:
-        - eventId: f3e0e76e-e4a8-466e-ab9c-ae36c15b8e97
-          name: Sasquatch Ballet
-          location: Seattle... probably
-          eventDescription: They're big, they're hairy, but they're also graceful. Come learn how the biggest feet can have the lightest touch.
-          dates:
-            - '2023-12-15'
-            - '2023-12-22'
-          price: 40
-        - eventId: 2f14374a-9c65-4ee5-94b7-fba66d893483
-          name: Solar Telescope Demonstration
-          location: Far from the sun.
-          eventDescription: Look at the sun without going blind!
-          dates:
-            - '2023-09-07'
-            - '2023-09-14'
-          price: 50
-        - eventId: 6aaa61ba-b2aa-4868-b803-603dbbf7bfdb
-          name: Cook like a Caveman
-          location: Fire Pit on East side
-          eventDescription: Learn to cook on an open flame.
-          dates:
-            - '2023-11-10'
-            - '2023-11-17'
-            - '2023-11-24'
-          price: 5
-        - eventId: 602b75e1-5696-4ab8-8c7a-f9e13580f910
-          name: Underwater Basket Weaving
-          location: Rec Center Pool next door.
-          eventDescription: Learn to weave baskets underwater.
-          dates:
-            - '2023-09-12'
-            - '2023-09-15'
-          price: 15
-        - eventId: dad4bce8-f5cb-4078-a211-995864315e39
-          name: Mermaid Treasure Identification and Analysis
-          location: Room Sea-12
-          eventDescription: Join us as we review and classify a rare collection of 20 thingamabobs, gadgets, gizmos, whoosits, and whatsits — kindly donated by Ariel.
-          dates:
-            - '2023-09-05'
-            - '2023-09-08'
-          price: 30
-        - eventId: 6744a0da-4121-49cd-8479-f8cc20526495
-          name: Time Traveler Tea Party
-          location: Temporal Tearoom
-          eventDescription: Sip tea with important historical figures.
-          dates:
-            - '2023-11-18'
-            - '2023-11-25'
-            - '2023-12-02'
-          price: 60
-        - eventId: 3be6453c-03eb-4357-ae5a-984a0e574a54
-          name: Pirate Coding Workshop
-          location: Computer Room
-          eventDescription: Captain Blackbeard shares his love of the C...language. And possibly Arrrrr (R lang).
-          dates:
-            - '2023-10-29'
-            - '2023-10-30'
-            - '2023-10-31'
-          price: 45
-        - eventId: 9d90d29a-2af5-4206-97d9-9ea9ceadcb78
-          name: Llama Street Art Through the Ages
-          location: Auditorium
-          eventDescription: Llama street art?! Alpaca my bags -- let's go!
-          dates:
-            - '2023-10-29'
-            - '2023-10-30'
-            - '2023-10-31'
-          price: 45
-        - eventId: a3c7b2c4-b5fb-4ef7-9322-00a919864957
-          name: The Great Parrot Debate
-          location: Outdoor Amphitheatre
-          eventDescription: See leading parrot minds discuss important geopolitical issues.
-          dates:
-            - '2023-11-03'
-            - '2023-11-10'
-          price: 35
-        - eventId: b92d46b7-4c5d-422b-87a5-287767e26f29
-          name: Eat a Bunch of Corn
-          location: Cafeteria
-          eventDescription: We accidentally bought too much corn. Please come eat it.
-          dates:
-            - '2023-11-10'
-            - '2023-11-17'
-            - '2023-11-24'
-          price: 5
-    UpdateSpecialEventRequestExample:
-      summary: Update special event request
-      value:
-        location: On the beach.
-        price: 15
-    UpdateSpecialEventResponseExample:
-      summary: Update special event
-      value:
-        eventId: dad4bce8-f5cb-4078-a211-995864315e39
-        name: Mermaid Treasure Identification and Analysis
-        location: On the beach.
-        eventDescription: Join us as we review and classify a rare collection of 20 thingamabobs, gadgets, gizmos, whoosits, and whatsits, kindly donated by Ariel.
-        dates:
-          - '2023-09-05'
-          - '2023-09-08'
-        price: 15
-    GetMuseumHoursResponseExample:
-      summary: Get hours response
-      value:
-        - date: "2023-09-11"
-          timeOpen: "09:00"
-          timeClose: "18:00"
-        - date: "2023-09-12"
-          timeOpen: "09:00"
-          timeClose: "18:00"
-        - date: "2023-09-13"
-          timeOpen: "09:00"
-          timeClose: "18:00"
-        - date: "2023-09-14"
-          timeOpen: "09:00"
-          timeClose: "18:00"
-        - date: "2023-09-15"
-          timeOpen: "10:00"
-          timeClose: "16:00"
-        - date: "2023-09-18"
-          timeOpen: "09:00"
-          timeClose: "18:00"
-        - date: "2023-09-19"
-          timeOpen: "09:00"
-          timeClose: "18:00"
-        - date: "2023-09-20"
-          timeOpen: "09:00"
-          timeClose: "18:00"
-        - date: "2023-09-21"
-          timeOpen: "09:00"
-          timeClose: "18:00"
-        - date: "2023-09-22"
-          timeOpen: "10:00"
-          timeClose: "16:00"
-  parameters:
-    PaginationPage:
-      name: page
-      in: query
-      description: Page number to retrieve.
-      schema:
-        type: integer
-        default: 1
-        example: 2
-    PaginationLimit:
-      name: limit
-      in: query
-      description: Number of days per page.
-      schema:
-        type: integer
-        default: 10
-        maximum: 30
-        example: 15
-    EventId:
-      name: eventId
-      in: path
-      description: Identifier for a special event.
-      required: true
-      schema:
-        type: string
-        format: uuid
-        example: dad4bce8-f5cb-4078-a211-995864315e39
-    StartDate:
-      name: startDate
-      in: query
-      description: Starting date to retrieve future operating hours from. Defaults to today's date.
-      schema:
-        type: string
-        format: date
-        example: '2023-02-23'
-    EndDate:
-      name: endDate
-      in: query
-      description: End of a date range to retrieve special events for. Defaults to 7 days after `startDate`.
-      schema:
-        type: string
-        format: date
-        example: '2023-04-18'
-    TicketId:
-      name: ticketId
-      in: path
-      description: Identifier for a ticket to a museum event. Used to generate ticket image.
-      required: true
-      schema:
-        type: string
-        format: uuid
-        example: a54a57ca-36f8-421b-a6b4-2e8f26858a4c
   responses:
     BadRequest:
-      description: Bad request.
+      description: Bad request — missing or invalid parameters.
       content:
-        application/problem+json:
+        application/json:
           schema:
             $ref: '#/components/schemas/Error'
+          example:
+            code: BAD_REQUEST
+            message: The field "amount" is required.
+
     NotFound:
-      description: Not found.
+      description: Resource not found.
       content:
-        application/problem+json:
+        application/json:
           schema:
             $ref: '#/components/schemas/Error'
-    Unauthorized:
-      description: Unauthorized.
+          example:
+            code: NOT_FOUND
+            message: The requested resource does not exist.
+
+    Declined:
+      description: The transaction was declined by the processor.
       content:
-        application/problem+json:
+        application/json:
           schema:
             $ref: '#/components/schemas/Error'
-tags:
-  - name: Operations
-    description: Operational information about the museum.
-  - name: Events
-    description: Special events hosted by the museum.
-  - name: Tickets
-    description: Museum tickets for general entrance or special events.
-security:
-  - MuseumPlaceholderAuth: []
+          example:
+            code: DECLINED
+            message: Insufficient funds.

@@ -1,22 +1,71 @@
+seo:
+  title: Payment Services Developer Portal
+  description: API documentation, guides, and technical references for the Payment Services platform.
+
 logo:
   image: ./images/logo.png
 
+extends:
+  - ./rulesets/agent-ready.yaml
+
+navbar:
+  items:
+    - label: Guides
+      page: docs/guides/index.md
+    - label: API Reference
+      page: apis/openapi.yaml
+    - label: About
+      page: about.md
+
+# Register API specifications.
+# Use the pattern <name>@<version> for each API.
+# Remote specs can be added as: root: https://example.com/openapi.yaml
+apis:
+  payment-services@v1:
+    root: ./apis/openapi.yaml
+
+
+# --- Agent interface --------------------------------------------------------
+# Realm auto-generates an MCP server at /mcp — the primary way AI agents
+# consume these docs (the real agent path, not llms.txt). Default-on; shown
+# explicitly so the team knows the knob exists.
+mcp:
+  hide: false
+
 footer:
   items:
-    - group: Redocly
+    - group: Developer Resources
+      items:
+        - href: https://redocly.com/docs
+          label: Redocly Docs
+        - href: https://openapis.org
+          label: OpenAPI Initiative
+    - group: Company
       items:
         - href: https://redocly.com
           label: Redocly.com
-        - href: https://redocly.com/docs
-          label: Redocly docs
-    - group: Docs Resources
-      items:
-        - href: https://markdoc.dev/
-          label: Markdoc
-        - href: https://openapis.org
-          label: OpenAPI
+
 aiAssistant:
   trigger:
-    hide: true
+    hide: false
     inputType: button
     inputIcon: redocly
+
+# --- Publish gate (Scorecard) ----------------------------------------------
+# Ordered lowest -> highest. An API earns the highest level it passes with no
+# errors. CI gates publish on `Agent-Ready`:
+#   redocly scorecard-classic --target-level Agent-Ready --format junit
+# NOTE: scorecardClassic requires a paid Redocly project (Pro/Enterprise) and
+# authentication. Verify the level/ruleset syntax against the live
+# `configure-scorecard` guide before relying on it in CI.
+scorecardClassic:
+  levels:
+    - name: Baseline
+      extends:
+        - minimal
+    - name: Reference-Ready
+      extends:
+        - recommended
+    - name: Agent-Ready
+      extends:
+        - ./rulesets/agent-ready.yaml

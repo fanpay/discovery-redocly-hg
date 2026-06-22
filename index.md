@@ -1,18 +1,28 @@
-# Start something new
+---
+title: Payment Services Developer Portal
+description: API documentation, guides, and technical references for the Payment Services platform.
+---
 
-There's a real excitement to starting something new.
+# Payment Services Developer Portal
 
-- A blank page
-- A fresh opportunity
-- Limitless potential
+Welcome to the Payment Services developer documentation. This portal provides everything you need to integrate, test, and go live with our payment platform.
 
-## Good for writers
+## What's here
 
-Writers need strong tooling so they can deliver a lot of content in a short time.
-Efficiency is key, so this platform supports [Markdoc](https://markdoc.dev/) format (it's a lot like Markdown, but with added niceness).
+- **[Guides](/docs/guides/)** — Step-by-step walkthroughs covering authentication, sandbox setup, and common integration patterns.
+- **[API Reference](/apis/openapi.yaml)** — Full OpenAPI reference for the Payment Services API, including request/response schemas, code examples, and authentication details.
+- **[Tutorials](/docs/tutorials/)** — End-to-end implementation flows for real-world scenarios.
 
-Build-in link checking and branch previews lets writers move quickly and safely when creating content or managing updates.
+## Quick start
 
-## Good for readers
+1. Obtain your `client_id`, `client_secret`, and `clientToken` from your onboarding team.
+2. Exchange your credentials for a bearer token at the OAuth2 token endpoint.
+3. Send your first payment request to `POST /payments`.
 
-Clean layout and a visible table of contents makes good content a pleasure to read and process.
+See the [Getting Started guide](/docs/guides/) for the full walkthrough.
+
+## Current APIs
+
+| API | Version | Description |
+|-----|---------|-------------|
+| [Payment Services](/apis/openapi.yaml) | v1 | Payments, refunds, subscriptions, customers, vaulting, and payment links |
