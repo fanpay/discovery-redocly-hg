@@ -1,45 +1,114 @@
 # =============================================================================
-# Agent-Ready ruleset
+# Reference-Ready ruleset — Payment Services APIs
 # =============================================================================
-# The single definition of our documentation quality bar. A spec that passes
-# this is clean enough for an autonomous AI agent to integrate against with no
-# human spec-reading — which makes it precise enough for developers too.
+# The quality floor every spec must clear before it can be published.
+# Covers: metadata, structural hygiene, error coverage, security, naming,
+# descriptions, writing quality, and example/schema consistency.
 #
-# Referenced in exactly one place each:
-#   - root redocly.yaml `extends`        -> daily lint and CI gate
-#   - scorecardClassic `Agent-Ready` lvl -> the publish gate
-# Edit the bar HERE; both consumers pick it up.
+# Designed for payment/services APIs where:
+#   - A wrong example = a failed integration for any client reading the spec
+#   - Missing auth docs = an exploitable gap in a PCI-adjacent surface
+#   - Schema-example mismatches = the most common first-review finding
 #
-# Layered on top of `recommended-strict` (all recommended rules, warnings
-# promoted to errors). Below we add the gaps recommended-strict does NOT cover.
+# The Agent-Ready tier (agent-ready.yaml) extends this file and adds
+# example-presence requirements. Edit the bar HERE; both tiers pick it up.
 # =============================================================================
 
 extends:
   - recommended-strict
 
 rules:
-  # --- Descriptions ----------------------------------------------------------
-  # recommended already flags missing operation descriptions; we keep these
-  # explicit and at `error` so the intent is visible to anyone editing the bar.
+  # ---------------------------------------------------------------------------
+  # Metadata
+  # ---------------------------------------------------------------------------
+  # These rules catch common metadata issues that make specs harder to read and understand. 
+  # They are not enforced as errors because some specs legitimately have no contact or license information, and some descriptions are intentionally terse.
+  info-contact: warn           # Support channel for API consumers
+  info-license: warn           # License terms protect both parties
+
+  # ---------------------------------------------------------------------------
+  # Tags & operations — critical for agent tool-calling
+  # ---------------------------------------------------------------------------
+  # Agents use operationIds as function names when calling tools.
+  # An absent or duplicate operationId makes the operation unreachable.
+
+  operation-operationId: error
+  operation-operationId-unique: error
+  operation-operationId-url-safe: warn    # Prevents encoding issues in generated SDKs
+  tags-alphabetical: warn                 # Consistent ordering aids navigation
+  operation-tag-defined: error            # Tags in operations must be declared in global tags list
+
+  # ---------------------------------------------------------------------------
+  # Structural hygiene
+  # ---------------------------------------------------------------------------
+  # These rules catch common structural issues that make specs harder to read and understand.
+
+  no-path-trailing-slash: error           # /users/ vs /users — clients can't guess the canonical form
+  no-ambiguous-paths: error               # /users/{id} vs /users/profile — routing collision
+  no-identical-paths: error               # Duplicate paths silently discard one operation
+  path-not-include-query: error           # Query params must not be embedded in path strings
+  path-parameters-defined: error          # Every {param} in a path must be declared in parameters
+  paths-kebab-case: warn                  # REST convention; aids URL predictability
+  no-http-verbs-in-paths: warn            # /get-users → GET /users; verbs belong on the method
+  no-server-trailing-slash: warn          # Prevents doubled slashes when concatenating base + path
+  no-server-example.com: warn             # Strip placeholder servers before publishing
+
+  # ---------------------------------------------------------------------------
+  # References & schema integrity
+  # ---------------------------------------------------------------------------
+  # Every $ref must resolve; loose refs hide broken definitions
+  # Enum values must match the declared type; mismatches break generated SDKs
+  # Dead definitions inflate the spec and confuse agents.
+  spec-strict-refs: error                 # Every $ref must resolve; loose refs hide broken definitions
+  no-enum-type-mismatch: error            # Enum values must match the declared type
+  no-unused-components: warn              # Dead definitions inflate the spec and confuse agents
+
+  # ---------------------------------------------------------------------------
+  # Example / schema consistency — the most critical correctness gate
+  # ---------------------------------------------------------------------------
+  # These two rules catch every schema-example mismatch (all 12 issues in the
+  # Payment first review). A wrong example is a broken integration for any
+  # client — human developer or AI agent — that reads the spec.
+
+  no-invalid-media-type-examples:
+    severity: error
+    allowAdditionalProperties: false
+  no-invalid-schema-examples:
+    severity: error
+    allowAdditionalProperties: false
+
+  # ---------------------------------------------------------------------------
+  # Response coverage
+  # ---------------------------------------------------------------------------
+  # Every operation should declare at least one success response and at least
+  # one failure response. Agents use these to infer the shape of the request
+  # and response payloads. Missing responses are a common first-review finding.
+
+  operation-2xx-response: warn            # Every operation should document at least one success shape
+  operation-4xx-response: error           # Payment APIs must document failure shapes (401, 403, 409, 422)
+
+  # ---------------------------------------------------------------------------
+  # Security (critical for payment / PCI-adjacent APIs)
+  # ---------------------------------------------------------------------------
+  # Every operation must declare which security scheme(s) apply.
+  # Enforces the business decision from client Q14: whether partnerToken is
+  # required everywhere or Onboarding is a separate auth domain — both answers
+  # must be explicit in the spec, not implied by silence.
+  security-defined: error
+
+  # ---------------------------------------------------------------------------
+  # Descriptions
+  # ---------------------------------------------------------------------------
+  # Descriptions are critical for both human and agent readers. They explain
+  # the purpose of operations, parameters, and tags. Empty descriptions are
+  # worse than no descriptions because they imply the author didn't care enough
+  # to write one. These rules enforce non-empty descriptions on all operations,
+  # parameters, and tags.
   operation-description: error
   operation-summary: error
   tag-description: error
   parameter-description: error
 
-  # --- Examples (the real agent-readiness gap) -------------------------------
-  # Agents infer payload shapes from examples. The built-in below requires an
-  # example on every required scalar property — the bulk of what agents need.
-  # (recommended ships it as a warning; we promote to error.)
-  scalar-property-missing-example: error
-  # NOTE: no built-in enforces examples on *nested objects / arrays* too.
-  # Broadening to those needs a custom JS plugin rule — deferred until a real
-  # spec shows it's worth it. Don't fake it with a configurable rule: the
-  # `SchemaProperties` subject checks for a child named `example`, not that
-  # each property HAS an example.
-
-  # Demonstration configurable rule — the pattern the team copies for
-  # product-specific standards. Requires a non-empty description on every
-  # operation.
   rule/operation-description-non-empty:
     subject:
       type: Operation
@@ -47,5 +116,111 @@ rules:
     assertions:
       defined: true
       nonEmpty: true
-    message: Every operation must have a non-empty description.
+    message: Operation description must not be empty.
     severity: error
+
+  rule/response-description-non-empty:
+    subject:
+      type: Response
+      property: description
+    assertions:
+      defined: true
+      nonEmpty: true
+    message: Every response status must have a non-empty description.
+    severity: error
+
+  # ---------------------------------------------------------------------------
+  # Writing quality
+  # ---------------------------------------------------------------------------
+  # These rules are advisory only. They catch common writing issues that make
+  # specs harder to read and understand. They are not enforced as errors because
+  # some operations legitimately have no summary or description, and some
+  # descriptions are intentionally terse.
+  rule/operation-summary-sentence-case:
+    subject:
+      type: Operation
+      property: summary
+    assertions:
+      pattern: /^[A-Z]/
+    message: Operation summaries must start with a capital letter.
+    severity: warn
+
+  rule/operation-summary-length:
+    subject:
+      type: Operation
+      property: summary
+    assertions:
+      minLength: 5
+      maxLength: 60
+    message: Operation summary must be between 5 and 60 characters.
+    severity: warn
+
+  # ---------------------------------------------------------------------------
+  # Content security
+  # ---------------------------------------------------------------------------
+  # These rules are advisory only. They catch common security issues that make
+  # specs unsafe to render in a browser. They are not enforced as errors because
+  # some descriptions legitimately contain HTML or script tags, and some
+  # descriptions are intentionally terse.
+  rule/no-script-tags-in-markdown:
+    subject:
+      type: any
+      property: description
+    assertions:
+      notPattern: '<script'
+    message: Descriptions must not contain <script> tags (XSS risk in rendered docs).
+    severity: warn
+
+  # ---------------------------------------------------------------------------
+  # Property naming
+  # ---------------------------------------------------------------------------
+  # Enforces consistency across all schemas — the spec currently mixes
+  # terminalName, deviceSerialNumber, paymentDay, etc.
+  rule/property-casing-camel-case:
+    subject:
+      type: SchemaProperties
+    assertions:
+      casing: camelCase
+    message: Schema property names must use camelCase.
+    severity: error
+
+  # ---------------------------------------------------------------------------
+  # Server URLs
+  # ---------------------------------------------------------------------------
+  # Enforces HTTPS for all server URLs. HTTP is not allowed for any production
+  # payment API because it is not PCI-compliant. Advisory only because some
+  # specs legitimately include HTTP servers for local development or testing.
+  rule/servers-https-only:
+    subject:
+      type: Server
+      property: url
+    assertions:
+      pattern: '/^https:/'
+    message: Server URLs must use HTTPS.
+    severity: error
+
+  # ---------------------------------------------------------------------------
+  # Request body conventions
+  # ---------------------------------------------------------------------------
+  # POST operations on a payment API that don't declare a body are almost
+  # certainly incomplete — catch them before review.
+  rule/post-should-define-requestBody:
+    severity: error
+    message: POST operations must define a requestBody.
+    subject:
+      type: Operation
+      filterInParentKeys:
+        - post
+    assertions:
+      required:
+        - requestBody
+
+  # ---------------------------------------------------------------------------
+  # Traceability
+  # ---------------------------------------------------------------------------
+  # Payment APIs should return a correlation ID header so clients can reference
+  # specific calls with support teams. Advisory only.
+  response-contains-header:
+    severity: warn
+    names:
+      - x-request-id
