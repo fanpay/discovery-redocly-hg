@@ -5,6 +5,9 @@ seo:
 logo:
   image: ./images/logo.png
 
+extends:
+  - ./rulesets/agent-ready.yaml
+
 navbar:
   items:
     - label: Guides
@@ -19,14 +22,15 @@ navbar:
 # Remote specs can be added as: root: https://example.com/openapi.yaml
 apis:
   payment-services@v1:
-    root: apis/openapi.yaml
+    root: ./apis/openapi.yaml
 
-# Shared linting rules applied to all registered APIs.
-rules:
-  no-unused-components: warn
-  operation-description: warn
-  operation-operationId: error
-  tag-description: warn
+
+# --- Agent interface --------------------------------------------------------
+# Realm auto-generates an MCP server at /mcp — the primary way AI agents
+# consume these docs (the real agent path, not llms.txt). Default-on; shown
+# explicitly so the team knows the knob exists.
+mcp:
+  hide: false
 
 footer:
   items:
@@ -46,3 +50,22 @@ aiAssistant:
     hide: false
     inputType: button
     inputIcon: redocly
+
+# --- Publish gate (Scorecard) ----------------------------------------------
+# Ordered lowest -> highest. An API earns the highest level it passes with no
+# errors. CI gates publish on `Agent-Ready`:
+#   redocly scorecard-classic --target-level Agent-Ready --format junit
+# NOTE: scorecardClassic requires a paid Redocly project (Pro/Enterprise) and
+# authentication. Verify the level/ruleset syntax against the live
+# `configure-scorecard` guide before relying on it in CI.
+scorecardClassic:
+  levels:
+    - name: Baseline
+      extends:
+        - minimal
+    - name: Reference-Ready
+      extends:
+        - recommended
+    - name: Agent-Ready
+      extends:
+        - ./rulesets/agent-ready.yaml

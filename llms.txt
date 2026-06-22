@@ -17,7 +17,7 @@
 ### Authentication
 All requests require two credentials:
 1. Bearer token — obtained via OAuth2 Client Credentials at `/oauth2/token` using Basic Auth (base64 of `client_id:client_secret`). Expires after 3600 seconds.
-2. `merchantToken` header — a GUID identifying the merchant on every request.
+2. `clientToken` header — a GUID identifying the client on every request.
 
 ### Environments
 - Sandbox: `https://sandbox.api.example.com/v1` (token: `https://sandbox.api.example.com/oauth2/token`)

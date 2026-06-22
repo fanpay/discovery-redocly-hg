@@ -15,7 +15,7 @@ Welcome to the Payment Services developer documentation. This portal provides ev
 
 ## Quick start
 
-1. Obtain your `client_id`, `client_secret`, and `merchantToken` from your onboarding team.
+1. Obtain your `client_id`, `client_secret`, and `clientToken` from your onboarding team.
 2. Exchange your credentials for a bearer token at the OAuth2 token endpoint.
 3. Send your first payment request to `POST /payments`.
 

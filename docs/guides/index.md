@@ -15,7 +15,7 @@ Before you begin, obtain the following credentials from your integration team:
 |-----------|-------------|
 | `client_id` | OAuth 2.0 client identifier |
 | `client_secret` | OAuth 2.0 client secret |
-| `merchantToken` | Your merchant identifier (GUID) — required on every request |
+| `clientToken` | Your client identifier (GUID) — required on every request |
 
 All credentials are environment-specific. Sandbox credentials only work against the sandbox base URL.
 
@@ -42,13 +42,13 @@ The response returns an `access_token` valid for 3600 seconds. Request a new one
 
 ## Step 2 — Send your first payment
 
-Include the token in the `Authorization` header and your `merchantToken` as a custom header on every request:
+Include the token in the `Authorization` header and your `clientToken` as a custom header on every request:
 
 ```bash
 curl -X POST https://sandbox.api.example.com/v1/payments \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
   -H "Content-Type: application/json" \
-  -H "merchantToken: YOUR_MERCHANT_TOKEN" \
+  -H "clientToken: YOUR_CLIENT_TOKEN" \
   -d '{
     "amount": { "amount": 10.00, "currency": "USD" },
     "paymentMethod": {
@@ -78,7 +78,7 @@ Every API call requires these headers:
 |--------|----------|-------------|
 | `Authorization` | Yes | `Bearer {access_token}` |
 | `Content-Type` | Yes | Always `application/json` |
-| `merchantToken` | Yes | Your merchant GUID |
+| `clientToken` | Yes | Your client GUID |
 | `requestId` | No | Optional UUID for idempotency and tracing |
 
 ## Next steps
