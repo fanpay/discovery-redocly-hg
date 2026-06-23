@@ -69,6 +69,3 @@ scorecardClassic:
     - name: OpenAPI-Ready
       extends:
         - ./rulesets/openapi-rules.yaml
-    - name: Markdown-Ready
-      extends:
-        - ./rulesets/markdown-rules.yaml
