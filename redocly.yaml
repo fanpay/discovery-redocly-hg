@@ -51,6 +51,22 @@ aiAssistant:
     inputType: button
     inputIcon: redocly
 
+# --- Search -----------------------------------------------------------------
+# FlexSearch is the default engine and supports ONLY the built-in group facet,
+# driven by the `redocly_category` metadata field. Custom `filters.facets`
+# (e.g. multi-select/select/tags) require the Typesense engine, which needs an
+# Enterprise/Enterprise+ plan — so they are intentionally NOT configured here.
+# Pages are searchable by default; set `metadata.redocly_category` on a page
+# (or via metadataGlobs below) to control which group facet it appears under.
+search:
+  engine: flexsearch
+
+# Assign a search category by directory so the whole examples section shares
+# one group facet without editing every file's frontmatter.
+metadataGlobs:
+  'docs/examples/**':
+    redocly_category: Examples
+
 # --- Publish gate (Scorecard) ----------------------------------------------
 # Ordered lowest -> highest. An API earns the highest level it passes with no
 # errors. CI gates publish on `Agent-Ready`:
