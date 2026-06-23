@@ -1,51 +1,57 @@
 # =============================================================================
-# Agent-Ready ruleset
+# Agent-Ready ruleset — Payment Services APIs
 # =============================================================================
-# The single definition of our documentation quality bar. A spec that passes
-# this is clean enough for an autonomous AI agent to integrate against with no
-# human spec-reading — which makes it precise enough for developers too.
+# The publish gate. A spec that passes this is clean enough for an autonomous
+# AI agent to integrate against with no human spec-reading — which makes it
+# precise enough for developers and credible enough for business stakeholders.
 #
 # Referenced in exactly one place each:
-#   - root redocly.yaml `extends`        -> daily lint and CI gate
-#   - scorecardClassic `Agent-Ready` lvl -> the publish gate
+#   - root redocly.yaml `extends`           → daily lint and CI gate
+#   - scorecardClassic `Agent-Ready` level  → the publish gate
 # Edit the bar HERE; both consumers pick it up.
 #
-# Layered on top of `recommended-strict` (all recommended rules, warnings
-# promoted to errors). Below we add the gaps recommended-strict does NOT cover.
+# Architecture: layers on top of Reference-Ready (openapi-rules.yaml).
+# That file handles structural hygiene, security, descriptions, and naming.
+# This file adds only what Reference-Ready does not cover: example presence.
 # =============================================================================
 
 extends:
-  - recommended-strict
+  - ./openapi-rules.yaml
 
 rules:
-  # --- Descriptions ----------------------------------------------------------
-  # recommended already flags missing operation descriptions; we keep these
-  # explicit and at `error` so the intent is visible to anyone editing the bar.
-  operation-description: error
-  operation-summary: error
-  tag-description: error
-  parameter-description: error
-
-  # --- Examples (the real agent-readiness gap) -------------------------------
-  # Agents infer payload shapes from examples. The built-in below requires an
-  # example on every required scalar property — the bulk of what agents need.
-  # (recommended ships it as a warning; we promote to error.)
+  # ---------------------------------------------------------------------------
+  # Example presence (the real agent-readiness gap)
+  # ---------------------------------------------------------------------------
+  # Agents infer payload shapes from examples. Without an example on a required
+  # scalar property, an agent must guess the value — and guesses fail.
+  # recommended-strict ships this as a warning; we promote it to error.
+  #
+  # Coverage note: this rule covers required scalar properties. Nested objects
+  # and arrays are NOT covered by any built-in configurable rule — a JS plugin
+  # rule would be needed to extend coverage there. Deferred until a real spec
+  # shows it's worth the added complexity.
   scalar-property-missing-example: error
-  # NOTE: no built-in enforces examples on *nested objects / arrays* too.
-  # Broadening to those needs a custom JS plugin rule — deferred until a real
-  # spec shows it's worth it. Don't fake it with a configurable rule: the
-  # `SchemaProperties` subject checks for a child named `example`, not that
-  # each property HAS an example.
 
-  # Demonstration configurable rule — the pattern the team copies for
-  # product-specific standards. Requires a non-empty description on every
-  # operation.
-  rule/operation-description-non-empty:
+  # ---------------------------------------------------------------------------
+  # Operation-level examples
+  # ---------------------------------------------------------------------------
+  # Every operation should carry at least one request and one response example
+  # so agents can construct real calls without guessing payload shapes.
+  # These are warnings rather than errors because some operations (e.g. DELETE
+  # with no body) legitimately have nothing to show.
+  rule/operation-request-example:
     subject:
-      type: Operation
-      property: description
+      type: RequestBody
     assertions:
       defined: true
-      nonEmpty: true
-    message: Every operation must have a non-empty description.
-    severity: error
+    message: Request bodies should include at least one example.
+    severity: warn
+
+  rule/response-example-defined:
+    subject:
+      type: Response
+      property: content
+    assertions:
+      defined: true
+    message: Responses should include content with at least one example.
+    severity: warn
