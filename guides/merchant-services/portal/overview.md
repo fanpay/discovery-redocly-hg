@@ -32,8 +32,8 @@ The platform experience is a strong fit when you want to:
 
 You can use this section alongside:
 
-- [Merchant Services Overview](/guides/)
-- [Get Started](/guides/get-started)
+- Merchant Services Overview
+- Get Started
 -
 - Merchant Services API Reference
 - Merchant Digital Onboarding API Reference

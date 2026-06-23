@@ -15,7 +15,7 @@ This is an example markdown page that demonstrates the required frontmatter stru
 
 Before starting, ensure you have:
 
-- An active account (see [Account Setup](/guides/getting-started))
+- An active account see Account Setup
 - Your API credentials (`API_KEY`)
 - A REST client like cURL, Postman, or your language's HTTP library
 
@@ -72,8 +72,8 @@ All responses follow this structure:
 
 ## Next Steps
 
-- [Explore the API Reference](/apis/openapi.yaml)
-- [Learn about webhooks](/guides/webhooks)
+- Explore the API Reference
+- Learn about webhooks 
 
 ## Troubleshooting
 
@@ -87,7 +87,7 @@ A 401 indicates an authentication problem. Verify:
 
 **Where can I find my API key?**
 
-Visit the [Dashboard → API Keys](/guides/dashboard-settings) section of your account.
+Visit the Dashboard → API Keys section of your account.
 
 ---
 
