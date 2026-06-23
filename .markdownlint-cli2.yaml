@@ -14,7 +14,7 @@ customRules:
 
 # Which files to lint.
 globs:
-  - "**/*.md"
+  - "docs/**/*.md"
 
 # What to skip: dependencies, editor/agent tooling, and theme internals —
 # none of these are published documentation.

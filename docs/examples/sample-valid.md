@@ -7,6 +7,7 @@ slug:
   - "/guides/sample-valid"
   - "/guides/valid-alias"
 owner: payments-docs
+
 ---
 
 # Example API Integration Guide
@@ -75,7 +76,7 @@ All responses follow this structure:
 ## Next Steps
 
 - Explore the API Reference
-- Learn about webhooks 
+- Learn about webhooks
 
 ## Troubleshooting
 
