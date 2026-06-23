@@ -3,7 +3,9 @@ title: "How to Authenticate your API"
 description: "Learn how to securely authenticate your requests using Bearer tokens."
 tags: ["auth", "security", "tokens"]
 status: "published"
-slug: "/guides/sample-valid"
+slug: 
+  - "/guides/sample-valid"
+  - "/guides/valid-alias"
 owner: payments-docs
 ---
 
