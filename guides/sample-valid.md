@@ -3,8 +3,8 @@ title: "How to Authenticate your API"
 description: "Learn how to securely authenticate your requests using Bearer tokens."
 tags: ["auth", "security", "tokens"]
 status: "published"
-last_updated: "2026-06-22"
 slug: "/guides/sample-valid"
+owner: payments-docs
 ---
 
 # Example API Integration Guide
@@ -80,6 +80,7 @@ All responses follow this structure:
 **Why am I getting a 401 error?**
 
 A 401 indicates an authentication problem. Verify:
+
 - Your API key is correct
 - You're using `Bearer` authentication
 - Your credentials haven't expired
@@ -90,4 +91,4 @@ Visit the [Dashboard → API Keys](/guides/dashboard-settings) section of your a
 
 ---
 
-*Questions? Contact support@example.com*
+*Questions? Contact [support@example.com](mailto:support@example.com)*
