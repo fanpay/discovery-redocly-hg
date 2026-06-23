@@ -11,7 +11,7 @@ Whether you're accepting payments through a portal, embedding payments into your
 ### 🧾 Accept payments quickly
 Use the Virtual Terminal or hosted forms to start processing payments with minimal setup.
 
-👉 [Get started with the platform](/guides/merchant-services/portal/get-started)
+👉 [Get started with the platform](/docs/guides/merchant-services/portal/get-started)
 
 ---
 
@@ -96,7 +96,7 @@ Receive instant updates for payment events and status changes.
 2. Generate an access token  
 3. Send your first payment request  
 
-👉 [Start here](/guides/merchant-services/get-started)
+👉 [Start here](/docs/guides/merchant-services/get-started)
 
 ---
 
@@ -120,6 +120,6 @@ Choose the approach that fits your needs:
 
 ## 👉 Next steps
 
-- [Get started](/guides/merchant-services/get-started)  
+- [Get started](/docs/guides/merchant-services/get-started)  
 - Explore the Sample Payments Platform guides  
 - Review the API reference  

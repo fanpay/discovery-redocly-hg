@@ -33,7 +33,7 @@ If you're building software and want to integrate payments directly into your pl
 - Learn how to embed payment capabilities into your application
 
 👉 **Next step:**  
-<!--[View Online Payment Integrations →](/guides/integrations)-->
+<!--[View Online Payment Integrations →](/docs/guides/merchant-services/integrations/overview)-->
 
 ---
 
@@ -46,7 +46,7 @@ If you're looking to accept payments for your business:
 - Simplify your payment workflows
 
 👉 **Next step:**  
-<!--[View Payment Portal Guides →](/guides/portal)-->
+<!--[View Payment Portal Guides →](/docs/guides/merchant-services/portal/overview)-->
 
 ---
 
