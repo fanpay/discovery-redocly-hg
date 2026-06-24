@@ -5,6 +5,9 @@ seo:
 logo:
   image: ./images/logo.png
 
+plugins:
+  - ./rulesets/plugins/string-schemas-length-defined.cjs
+
 extends:
   - ./rulesets/agent-ready.yaml
 

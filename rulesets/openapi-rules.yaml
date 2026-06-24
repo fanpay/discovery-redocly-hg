@@ -260,35 +260,13 @@ rules:
     severity: error
 
   # ---------------------------------------------------------------------------
-  # String length constraints (from Redocly CLI Cookbook: string-schemas-length-defined)
+  # String length constraints — implemented as a JS plugin
   # ---------------------------------------------------------------------------
-  # Payment-critical fields (accountNumber, routingNumber, terminalId, cardNumber)
-  # must declare minLength + maxLength so that AI agents and code generators can
-  # validate values before sending. Without bounds, an agent must guess — and
-  # guesses on financial identifiers fail in non-obvious ways at the processor.
-  # Fields with an enum are exempt (the allowed set is already constrained).
-
-  rule/string-schemas-length-defined:
-    subject:
-      type: Schema
-    where:
-      - subject:
-          type: Schema
-          property: type
-        assertions:
-          const: string
-          defined: true
-    assertions:
-      requireAny:
-        - minLength
-        - maxLength
-        - enum
-        - format
-      mutuallyRequired:
-        - minLength
-        - maxLength
-    message: String schemas must define minLength + maxLength (or use enum/format). Required for agent request validation.
-    severity: warn
+  # requireAny and mutuallyRequired are not supported by Redocly declarative
+  # rules, so the logic lives in rulesets/plugins/string-schemas-length-defined.js
+  # (registered in redocly.yaml under `plugins`).
+  # The rule ID used in rulesets is: payment-rules/string-schemas-length-defined
+  payment-rules/string-schemas-length-defined: warn
 
   # ---------------------------------------------------------------------------
   # Array item type required (from Redocly CLI Cookbook: required-items-for-array-schemas)

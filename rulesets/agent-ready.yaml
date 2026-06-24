@@ -39,19 +39,26 @@ rules:
   # so agents can construct real calls without guessing payload shapes.
   # These are warnings rather than errors because some operations (e.g. DELETE
   # with no body) legitimately have nothing to show.
+  # NOTE: Declarative rules cannot assert example/examples presence inside a
+  # MediaType — the `defined` assertion here only verifies that the RequestBody
+  # object itself exists, not that it contains an example. Enforcing actual
+  # example presence would require a JS plugin targeting the MediaType node.
   rule/operation-request-example:
     subject:
       type: RequestBody
     assertions:
       defined: true
-    message: Request bodies should include at least one example.
+    message: Request body is missing. Add a requestBody with at least one media-type example.
     severity: warn
 
+  # NOTE: Same limitation applies here — `defined: true` on Response.content
+  # confirms the content map is present, not that any MediaType inside it
+  # carries an `example` or `examples` field.
   rule/response-example-defined:
     subject:
       type: Response
       property: content
     assertions:
       defined: true
-    message: Responses should include content with at least one example.
+    message: Response is missing content. Add at least one media-type with an example.
     severity: warn
