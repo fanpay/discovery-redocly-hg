@@ -4,12 +4,11 @@ description: "Learn how to securely authenticate your requests using Bearer toke
 tags: ["auth", "security", "tokens"]
 status: "published"
 slug: 
-  - "/guides/sample-valid"
-  - "/guides/valid-alias"
+  - "/guides/sample-valid-category"
 owner: payments-docs
 metadata:
-  topics: security
-  page_type: document
+  topics: auth
+  page_type: payment
 
 ---
 

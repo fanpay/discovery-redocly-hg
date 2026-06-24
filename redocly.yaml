@@ -46,22 +46,25 @@ aiAssistant:
     inputIcon: redocly
 
 # --- Search -----------------------------------------------------------------
-# FlexSearch is the default engine and supports ONLY the built-in group facet,
-# driven by the `redocly_category` metadata field. Custom `filters.facets`
-# (e.g. multi-select/select/tags) require the Typesense engine, which needs an
-# Enterprise/Enterprise+ plan — so they are intentionally NOT configured here.
-# Pages are searchable by default; set `metadata.redocly_category` on a page
-# (or via metadataGlobs below) to control which group facet it appears under.
+# Custom `filters.facets` require the Typesense engine (Enterprise/Enterprise+);
+# under the default FlexSearch engine this whole block is ignored.
+# Each facet aggregates the SCALAR value of its `field` from every page's
+# `metadata` block — one value per page. `multi-select`/`select` controls how
+# many of those distinct values a user can pick in the dialog; they do NOT mean
+# a single page can hold a list. A YAML list in a page's metadata is flattened
+# into one comma-joined chip, so keep page values scalar.
 search:
-  engine: flexsearch
+  engine: typesense
   shortcuts:
-    - ctrl+k
-
-# Assign a search category by directory so the whole examples section shares
-# one group facet without editing every file's frontmatter.
-metadataGlobs:
-  'docs/examples/**':
-    redocly_category: Examples
+      - ctrl+k
+  filters:
+    facets:
+      - name: Topics
+        field: topics       # scalar per page; matches metadata.topics
+        type: multi-select
+      - name: Page Type
+        field: page_type    # scalar per page; matches metadata.page_type
+        type: multi-select
 
 # --- Publish gate (Scorecard) ----------------------------------------------
 # Ordered lowest -> highest. An API earns the highest level it passes with no
