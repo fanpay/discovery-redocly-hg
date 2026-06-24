@@ -11,7 +11,6 @@ Welcome to the Payment Services developer documentation. This portal provides ev
 
 - **[Guides](/docs/guides/)** — Step-by-step walkthroughs covering authentication, sandbox setup, and common integration patterns.
 - **[API Reference](/apis/openapi.yaml)** — Full OpenAPI reference for the Payment Services API, including request/response schemas, code examples, and authentication details.
-- **[Tutorials](/docs/tutorials/)** — End-to-end implementation flows for real-world scenarios.
 
 ## Quick start
 

@@ -200,6 +200,98 @@ rules:
     severity: error
 
   # ---------------------------------------------------------------------------
+  # Schema type correctness (from Redocly CLI Cookbook: json-schema-misconfigurations)
+  # ---------------------------------------------------------------------------
+  # Catches cross-type keyword misuse — the exact class of error found in the
+  # spec review (e.g. string fields carrying `minimum` instead of
+  # `minLength`, objects using `items` instead of `properties`).
+  # A schema with the wrong keyword for its type silently passes validation
+  # but breaks every code generator and AI agent that reads it.
+
+  rule/no-string-with-numeric-keywords:
+    subject:
+      type: Schema
+    where:
+      - subject:
+          type: Schema
+          property: type
+        assertions:
+          const: string
+    assertions:
+      disallowed:
+        - minimum
+        - maximum
+        - exclusiveMinimum
+        - exclusiveMaximum
+        - multipleOf
+    message: String schemas must not use numeric keywords (minimum/maximum). Use minLength/maxLength instead.
+    severity: error
+
+  rule/no-array-with-object-keywords:
+    subject:
+      type: Schema
+    where:
+      - subject:
+          type: Schema
+          property: type
+        assertions:
+          const: array
+    assertions:
+      disallowed:
+        - properties
+        - additionalProperties
+        - required
+    message: Array schemas must not use object keywords (properties). Use items instead.
+    severity: error
+
+  rule/no-object-with-array-keywords:
+    subject:
+      type: Schema
+    where:
+      - subject:
+          type: Schema
+          property: type
+        assertions:
+          const: object
+    assertions:
+      disallowed:
+        - items
+    message: Object schemas must not use array keywords (items). Use properties instead.
+    severity: error
+
+  # ---------------------------------------------------------------------------
+  # String length constraints — implemented as a JS plugin
+  # ---------------------------------------------------------------------------
+  # requireAny and mutuallyRequired are not supported by Redocly declarative
+  # rules, so the logic lives in rulesets/plugins/string-schemas-length-defined.js
+  # (registered in redocly.yaml under `plugins`).
+  # The rule ID used in rulesets is: payment-rules/string-schemas-length-defined
+  payment-rules/string-schemas-length-defined: warn
+
+  # ---------------------------------------------------------------------------
+  # Array item type required (from Redocly CLI Cookbook: required-items-for-array-schemas)
+  # ---------------------------------------------------------------------------
+  # An array without an `items` definition is untyped — an agent cannot know
+  # what to put inside it. Every array in a payment spec has a concrete element
+  # type (payment methods, subscription plans, devices, error objects).
+
+  rule/required-items-in-array-schemas:
+    subject:
+      type: Schema
+    where:
+      - subject:
+          type: Schema
+          property: type
+        assertions:
+          const: array
+          defined: true
+    assertions:
+      required:
+        - items
+    message: Array schemas must define an 'items' type so agents and generators know what the array contains.
+    severity: error
+
+  # ---------------------------------------------------------------------------
   # Request body conventions
   # ---------------------------------------------------------------------------
   # POST operations on a payment API that don't declare a body are almost
