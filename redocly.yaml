@@ -62,18 +62,12 @@ search:
   engine: typesense
   filters:
     facets:
-      - name: Topics            # multi-value, the "multiple categories" you want
+      - name: Topics
         field: topics
         type: multi-select
-      - name: Page Type            # multi-value, the "multiple categories" you want
-        field: page-type
+      - name: Page Type
+        field: page_type
         type: multi-select
-
-# Assign a search category by directory so the whole examples section shares
-# one group facet without editing every file's frontmatter.
-metadataGlobs:
-  'docs/examples/**':
-    redocly_category: Examples
 
 # --- Publish gate (Scorecard) ----------------------------------------------
 # Ordered lowest -> highest. An API earns the highest level it passes with no

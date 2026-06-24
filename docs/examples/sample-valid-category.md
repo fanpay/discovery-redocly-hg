@@ -11,8 +11,8 @@ metadata:
     - auth
     - security
     - tokens
-  page-type:
-    - payment
+  page_type:
+    -payment
 
 ---
 
