@@ -6,6 +6,9 @@
   "type": "module",
   "scripts": {
     "lint": "npx @redocly/cli@latest lint",
+    "lint:md": "npx -y markdownlint-cli2",
+    "lint:md:fix": "npx -y markdownlint-cli2 --fix",
+    "lint:all": "npm run lint && npm run lint:md",
     "preview": "npx @redocly/cli@latest preview"
   },
   "keywords": [

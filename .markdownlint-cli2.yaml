@@ -1,0 +1,43 @@
+# =============================================================================
+# Markdown lint configuration (markdownlint-cli2)
+# =============================================================================
+# Redocly's `lint` / scorecard engine only validates the OpenAPI description —
+# it does NOT lint standalone .md files. This config covers the prose docs
+# (guides, tutorials, examples, top-level pages) as a separate CI step.
+#
+# Run locally with:  npm run lint:md
+# =============================================================================
+
+# Custom rules (JS). MD101 enforces the baseline frontmatter dictionary.
+customRules:
+  - "./.markdownlint/required-frontmatter.cjs"
+
+# Which files to lint.
+globs:
+  - "docs/**/*.md"
+
+# What to skip: dependencies, editor/agent tooling, and theme internals —
+# none of these are published documentation.
+ignores:
+  - "node_modules"
+  - ".claude"
+  - "@theme"
+
+# Rule overrides. Start permissive; tighten as the docs mature.
+config:
+  # Prose docs use long, unwrapped lines — line length is not a quality signal.
+  MD013: false
+  # Allow inline HTML (occasionally needed for callouts, anchors, etc.).
+  MD033: false
+  # First line need not be an H1; pages lead with YAML frontmatter.
+  MD041: false
+  # Cosmetic table-pipe spacing — not a documentation quality signal.
+  MD060: false
+  # Reused headings ("Overview", "Get started") are fine across sections;
+  # only flag true duplicates nested under the same parent heading.
+  MD024:
+    siblings_only: true
+  # Pages carry a frontmatter `title:` AND a single body H1 — don't count
+  # the frontmatter title as a competing top-level heading.
+  MD025:
+    front_matter_title: ""
