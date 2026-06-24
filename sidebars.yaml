@@ -8,6 +8,6 @@
     - label: Payment Services API
       page: apis/openapi.yaml
     - label: Discovery Node API
-      page: https://raw.githubusercontent.com/fanpay/discovery-node-redocly/v1.0/openapi/openapi.yaml
+      page: apis/discovery-node-redocly-openapi.yaml
     - label: Discovery Python API
-      page: https://raw.githubusercontent.com/fanpay/discovery-python-redocly/v1.0/docs/openapi.yaml
+      page: apis/discovery-python-redocly-openapi.yaml
