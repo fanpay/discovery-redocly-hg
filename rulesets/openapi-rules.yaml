@@ -200,6 +200,120 @@ rules:
     severity: error
 
   # ---------------------------------------------------------------------------
+  # Schema type correctness (from Redocly CLI Cookbook: json-schema-misconfigurations)
+  # ---------------------------------------------------------------------------
+  # Catches cross-type keyword misuse — the exact class of error found in the
+  # spec review (e.g. string fields carrying `minimum` instead of
+  # `minLength`, objects using `items` instead of `properties`).
+  # A schema with the wrong keyword for its type silently passes validation
+  # but breaks every code generator and AI agent that reads it.
+
+  rule/no-string-with-numeric-keywords:
+    subject:
+      type: Schema
+    where:
+      - subject:
+          type: Schema
+          property: type
+        assertions:
+          const: string
+    assertions:
+      disallowed:
+        - minimum
+        - maximum
+        - exclusiveMinimum
+        - exclusiveMaximum
+        - multipleOf
+    message: String schemas must not use numeric keywords (minimum/maximum). Use minLength/maxLength instead.
+    severity: error
+
+  rule/no-array-with-object-keywords:
+    subject:
+      type: Schema
+    where:
+      - subject:
+          type: Schema
+          property: type
+        assertions:
+          const: array
+    assertions:
+      disallowed:
+        - properties
+        - additionalProperties
+        - required
+    message: Array schemas must not use object keywords (properties). Use items instead.
+    severity: error
+
+  rule/no-object-with-array-keywords:
+    subject:
+      type: Schema
+    where:
+      - subject:
+          type: Schema
+          property: type
+        assertions:
+          const: object
+    assertions:
+      disallowed:
+        - items
+    message: Object schemas must not use array keywords (items). Use properties instead.
+    severity: error
+
+  # ---------------------------------------------------------------------------
+  # String length constraints (from Redocly CLI Cookbook: string-schemas-length-defined)
+  # ---------------------------------------------------------------------------
+  # Payment-critical fields (accountNumber, routingNumber, terminalId, cardNumber)
+  # must declare minLength + maxLength so that AI agents and code generators can
+  # validate values before sending. Without bounds, an agent must guess — and
+  # guesses on financial identifiers fail in non-obvious ways at the processor.
+  # Fields with an enum are exempt (the allowed set is already constrained).
+
+  rule/string-schemas-length-defined:
+    subject:
+      type: Schema
+    where:
+      - subject:
+          type: Schema
+          property: type
+        assertions:
+          const: string
+          defined: true
+    assertions:
+      requireAny:
+        - minLength
+        - maxLength
+        - enum
+        - format
+      mutuallyRequired:
+        - minLength
+        - maxLength
+    message: String schemas must define minLength + maxLength (or use enum/format). Required for agent request validation.
+    severity: warn
+
+  # ---------------------------------------------------------------------------
+  # Array item type required (from Redocly CLI Cookbook: required-items-for-array-schemas)
+  # ---------------------------------------------------------------------------
+  # An array without an `items` definition is untyped — an agent cannot know
+  # what to put inside it. Every array in a payment spec has a concrete element
+  # type (payment methods, subscription plans, devices, error objects).
+
+  rule/required-items-in-array-schemas:
+    subject:
+      type: Schema
+    where:
+      - subject:
+          type: Schema
+          property: type
+        assertions:
+          const: array
+          defined: true
+    assertions:
+      required:
+        - items
+    message: Array schemas must define an 'items' type so agents and generators know what the array contains.
+    severity: error
+
+  # ---------------------------------------------------------------------------
   # Request body conventions
   # ---------------------------------------------------------------------------
   # POST operations on a payment API that don't declare a body are almost

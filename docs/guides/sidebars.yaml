@@ -1,0 +1,95 @@
+# Sidebar for the Guides section.
+# Activates for all pages under docs/guides/.
+# Paths are relative to the project root.
+
+# ── Build with APIs (External Developers) ─────────────────────────────────────
+- group: Build with APIs
+  items:
+    - page: build-with-apis/index.md
+      label: Overview
+    - group: Accept Payments
+      items:
+        - page: build-with-apis/accept-payments/index.md
+          label: Overview
+        - page: build-with-apis/accept-payments/features.md
+          label: Features
+    - group: Manage Customers
+      items:
+        - page: build-with-apis/manage-customers/index.md
+          label: Overview
+        - page: build-with-apis/manage-customers/features.md
+          label: Features
+
+# ── Run Your Business (Business Users) ────────────────────────────────────────
+- group: Run Your Business
+  items:
+    - page: run-your-business/index.md
+      label: Overview
+    - group: Accept Payments
+      items:
+        - page: run-your-business/accept-payments/index.md
+          label: Overview
+        - page: run-your-business/accept-payments/features.md
+          label: Features
+    - group: Manage Customers
+      items:
+        - page: run-your-business/manage-customers/index.md
+          label: Overview
+        - page: run-your-business/manage-customers/features.md
+          label: Features
+
+# ── Manage Integrations (Internal Devs) ───────────────────────────────────────
+- group: Manage Integrations
+  items:
+    - page: manage-integrations/index.md
+      label: Overview
+    - group: API Management
+      items:
+        - page: manage-integrations/api-management/index.md
+          label: Overview
+        - page: manage-integrations/api-management/features.md
+          label: Features
+    - group: System Monitoring
+      items:
+        - page: manage-integrations/system-monitoring/index.md
+          label: Overview
+        - page: manage-integrations/system-monitoring/features.md
+          label: Features
+
+# ── Automate with AI (AI Agents) ──────────────────────────────────────────────
+- group: Automate with AI
+  items:
+    - page: automate-with-ai/index.md
+      label: Overview
+    - group: Generate API Requests
+      items:
+        - page: automate-with-ai/generate-api-requests/index.md
+          label: Overview
+        - page: automate-with-ai/generate-api-requests/features.md
+          label: Features
+    - group: Automate Payment Workflows
+      items:
+        - page: automate-with-ai/automate-payment-workflows/index.md
+          label: Overview
+        - page: automate-with-ai/automate-payment-workflows/features.md
+          label: Features
+
+# ── Global Features ────────────────────────────────────────────────────────────
+- group: Global Features
+  items:
+    - page: global/get-api-key.md
+      label: Get API Key
+    - page: global/sandbox.md
+      label: Sandbox
+    - page: global/go-live.md
+      label: Go Live
+    - page: global/changelog.md
+      label: Changelog
+    - page: global/support.md
+      label: Support / Help
+
+# ── Platform Standards ─────────────────────────────────────────────────────────
+- group: Platform Standards
+  items:
+    - page: api-quality-standards.md
+      label: API Quality Standards

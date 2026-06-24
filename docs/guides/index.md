@@ -1,6 +1,7 @@
 ---
 title: Getting Started
 description: Authenticate, set up your sandbox, and make your first API call.
+sidebar: ./sidebars.yaml
 ---
 
 # Getting Started
@@ -11,11 +12,11 @@ This guide covers everything you need to make your first successful API call aga
 
 Before you begin, obtain the following credentials from your integration team:
 
-| Credential | Description |
-|-----------|-------------|
-| `client_id` | OAuth 2.0 client identifier |
-| `client_secret` | OAuth 2.0 client secret |
-| `clientToken` | Your client identifier (GUID) — required on every request |
+| Credential      | Description                                               |
+| --------------- | --------------------------------------------------------- |
+| `client_id`     | OAuth 2.0 client identifier                               |
+| `client_secret` | OAuth 2.0 client secret                                   |
+| `clientToken`   | Your client identifier (GUID) — required on every request |
 
 All credentials are environment-specific. Sandbox credentials only work against the sandbox base URL.
 
@@ -65,23 +66,23 @@ A successful response returns `authResponse: "APPROVED"` and a `paymentId` you c
 
 ## Environments
 
-| Environment | Base URL | Token URL |
-|-------------|----------|-----------|
-| Sandbox | `https://sandbox.api.example.com/v1` | `https://sandbox.api.example.com/oauth2/token` |
-| Production | `https://api.example.com/v1` | `https://api.example.com/oauth2/token` |
+| Environment | Base URL                             | Token URL                                      |
+| ----------- | ------------------------------------ | ---------------------------------------------- |
+| Sandbox     | `https://sandbox.api.example.com/v1` | `https://sandbox.api.example.com/oauth2/token` |
+| Production  | `https://api.example.com/v1`         | `https://api.example.com/oauth2/token`         |
 
 ## Request headers
 
 Every API call requires these headers:
 
-| Header | Required | Description |
-|--------|----------|-------------|
-| `Authorization` | Yes | `Bearer {access_token}` |
-| `Content-Type` | Yes | Always `application/json` |
-| `clientToken` | Yes | Your client GUID |
-| `requestId` | No | Optional UUID for idempotency and tracing |
+| Header          | Required | Description                               |
+| --------------- | -------- | ----------------------------------------- |
+| `Authorization` | Yes      | `Bearer {access_token}`                   |
+| `Content-Type`  | Yes      | Always `application/json`                 |
+| `clientToken`   | Yes      | Your client GUID                          |
+| `requestId`     | No       | Optional UUID for idempotency and tracing |
 
 ## Next steps
 
 - Read the [API Reference](/apis/openapi.yaml) for all endpoints, schemas, and code examples.
-- Follow the [Tutorials](/docs/tutorials/) for complete end-to-end integration walkthroughs.
+- See the [API Reference](/apis/openapi.yaml) for complete endpoint schemas and examples.

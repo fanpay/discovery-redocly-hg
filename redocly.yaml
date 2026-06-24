@@ -8,6 +8,10 @@ logo:
 extends:
   - ./rulesets/agent-ready.yaml
 
+search:
+  shortcuts:
+    - ctrl+k
+
 navbar:
   items:
     - label: Guides
@@ -20,10 +24,14 @@ navbar:
 # Register API specifications.
 # Use the pattern <name>@<version> for each API.
 # Remote specs can be added as: root: https://example.com/openapi.yaml
+# This is useful for lint and scorecard checks, and for generating the API Reference sidebar.
 apis:
-  payment-services@v1:
+  payment-services@v1.0:
     root: ./apis/openapi.yaml
-
+  discovery-node@v1.0:
+    root: https://raw.githubusercontent.com/fanpay/discovery-node-redocly/v1.0/openapi/openapi.yaml
+  discovery-python@v1.0:
+    root: https://raw.githubusercontent.com/fanpay/discovery-python-redocly/v1.0/docs/openapi.yaml
 
 # --- Agent interface --------------------------------------------------------
 # Realm auto-generates an MCP server at /mcp — the primary way AI agents
@@ -31,19 +39,6 @@ apis:
 # explicitly so the team knows the knob exists.
 mcp:
   hide: false
-
-footer:
-  items:
-    - group: Developer Resources
-      items:
-        - href: https://redocly.com/docs
-          label: Redocly Docs
-        - href: https://openapis.org
-          label: OpenAPI Initiative
-    - group: Company
-      items:
-        - href: https://redocly.com
-          label: Redocly.com
 
 aiAssistant:
   trigger:
@@ -72,3 +67,18 @@ scorecardClassic:
     - name: Markdown-Ready
       extends:
         - ./rulesets/markdown-rules.yaml
+
+# --- Footer -------------------------------------------------------------------
+# The footer is a global site-wide component. It is not part of the API spec.
+footer:
+  items:
+    - group: Developer Resources
+      items:
+        - href: https://redocly.com/docs
+          label: Redocly Docs
+        - href: https://openapis.org
+          label: OpenAPI Initiative
+    - group: Company
+      items:
+        - href: https://redocly.com
+          label: Redocly.com
