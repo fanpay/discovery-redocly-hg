@@ -7,12 +7,8 @@ slug:
   - "/guides/sample-valid-category"
 owner: payments-docs
 metadata:
-  topics:
-    - auth
-    - security
-    - tokens
-  page_type:
-    -payment
+  topics: auth
+  page_type: payment
 
 ---
 

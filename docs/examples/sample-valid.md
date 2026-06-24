@@ -7,6 +7,9 @@ slug:
   - "/guides/sample-valid"
   - "/guides/valid-alias"
 owner: payments-docs
+metadata:
+  topics: security
+  page_type: document
 
 ---
 
