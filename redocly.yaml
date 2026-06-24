@@ -59,7 +59,15 @@ aiAssistant:
 # Pages are searchable by default; set `metadata.redocly_category` on a page
 # (or via metadataGlobs below) to control which group facet it appears under.
 search:
-  engine: flexsearch
+  engine: typesense
+  filters:
+    facets:
+      - name: Topics            # multi-value, the "multiple categories" you want
+        field: topics
+        type: multi-select
+      - name: Page Type            # multi-value, the "multiple categories" you want
+        field: page-type
+        type: multi-select
 
 # Assign a search category by directory so the whole examples section shares
 # one group facet without editing every file's frontmatter.

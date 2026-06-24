@@ -7,7 +7,12 @@ slug:
   - "/guides/sample-valid-category"
 owner: payments-docs
 metadata:
-    redocly_category: Tutorials
+  topics:
+    - auth
+    - security
+    - tokens
+  page-type:
+    - payment
 
 ---
 
