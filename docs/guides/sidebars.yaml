@@ -87,9 +87,3 @@
       label: Changelog
     - page: global/support.md
       label: Support / Help
-
-# ── Platform Standards ─────────────────────────────────────────────────────────
-- group: Platform Standards
-  items:
-    - page: api-quality-standards.md
-      label: API Quality Standards
