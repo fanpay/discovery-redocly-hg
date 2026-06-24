@@ -1,7 +1,8 @@
 ---
 title: Getting Started
 description: Authenticate, set up your sandbox, and make your first API call.
-sidebar: ./sidebars.yaml
+sidebar:
+  path: ./sidebars.yaml
 ---
 
 # Getting Started

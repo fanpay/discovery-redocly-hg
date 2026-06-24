@@ -8,10 +8,6 @@ logo:
 extends:
   - ./rulesets/agent-ready.yaml
 
-search:
-  shortcuts:
-    - ctrl+k
-
 navbar:
   items:
     - label: Guides
@@ -55,6 +51,8 @@ aiAssistant:
 # (or via metadataGlobs below) to control which group facet it appears under.
 search:
   engine: flexsearch
+  shortcuts:
+    - ctrl+k
 
 # Assign a search category by directory so the whole examples section shares
 # one group facet without editing every file's frontmatter.
@@ -80,9 +78,6 @@ scorecardClassic:
     - name: OpenAPI-Ready
       extends:
         - ./rulesets/openapi-rules.yaml
-    - name: Markdown-Ready
-      extends:
-        - ./rulesets/markdown-rules.yaml
 
 # --- Footer -------------------------------------------------------------------
 # The footer is a global site-wide component. It is not part of the API spec.
@@ -98,4 +93,3 @@ footer:
       items:
         - href: https://redocly.com
           label: Redocly.com
-        - ./rulesets/openapi-rules.yaml
