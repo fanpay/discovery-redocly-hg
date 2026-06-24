@@ -28,9 +28,9 @@ apis:
   payment-services@v1.0:
     root: ./apis/openapi.yaml
   discovery-node@v1.0:
-    root: https://raw.githubusercontent.com/fanpay/discovery-node-redocly/v1.0/openapi/openapi.yaml
+    root: https://raw.githubusercontent.com/fanpay/discovery-node-redocly/main/openapi/openapi.yaml
   discovery-python@v1.0:
-    root: https://raw.githubusercontent.com/fanpay/discovery-python-redocly/v1.0/docs/openapi.yaml
+    root: https://raw.githubusercontent.com/fanpay/discovery-python-redocly/main/docs/openapi.yaml
 
 # --- Agent interface --------------------------------------------------------
 # Realm auto-generates an MCP server at /mcp — the primary way AI agents
