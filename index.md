@@ -10,7 +10,7 @@ Welcome to the Payment Services developer documentation. This portal provides ev
 ## What's here
 
 - **[Guides](/docs/guides/)** — Step-by-step walkthroughs covering authentication, sandbox setup, and common integration patterns.
-- **[API Reference](/apis/openapi.yaml)** — Full OpenAPI reference for the Payment Services API, including request/response schemas, code examples, and authentication details.
+- **[API Reference](/apis/sample-api/@v1.0/openapi.yaml)** — Full OpenAPI reference for the Payment Services API, including request/response schemas, code examples, and authentication details.
 
 ## Quick start
 
@@ -24,4 +24,4 @@ See the [Getting Started guide](/docs/guides/) for the full walkthrough.
 
 | API | Version | Description |
 |-----|---------|-------------|
-| [Payment Services](/apis/openapi.yaml) | v1 | Payments, refunds, subscriptions, customers, vaulting, and payment links |
+| [Payment Services](/apis/sample-api/@v1.0/openapi.yaml) | v1 | Payments, refunds, subscriptions, customers, vaulting, and payment links |
