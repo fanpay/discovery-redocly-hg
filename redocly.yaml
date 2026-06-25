@@ -11,6 +11,16 @@ plugins:
 extends:
   - ./rulesets/agent-ready.yaml
 
+# --- Build / link-checker exclusions ----------------------------------------
+# The `sample-invalid-*` files under docs/examples/ intentionally contain
+# broken/empty links and other violations to demonstrate the linting setup.
+# Redocly's link checker has no per-file exception (only a global
+# `reunite.ignoreLinkChecker` toggle), so we exclude these demo files from the
+# build instead — which also keeps them out of the link checker.
+# Mirrors the `docs/**/sample-invalid-*.md` ignore in .markdownlint-cli2.yaml.
+ignore:
+  - 'docs/examples/sample-invalid-*.md'
+
 navbar:
   items:
     - label: Guides
