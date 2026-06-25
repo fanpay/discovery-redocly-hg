@@ -1,0 +1,21 @@
+# Root sidebar — activates for pages not covered by a directory-specific sidebar.
+# Guide content is handled by docs/guides/sidebars.yaml.
+# API specs are auto-generated from each registered spec in the config file.
+
+# ── API Reference ──────────────────────────────────────────────────────────────
+- page: index.md
+  label: Main page
+- group: API Reference
+  items:
+    - label: Payment Services API
+      page: ./sample-api/@v1.0/openapi.yaml
+- group: Discovery Node API
+  items:
+    - page: ./discovery-node/@v1.0/index.md
+    - page: ./discovery-node/@v1.0/discovery-node-redocly-openapi.yaml
+    - page: ./discovery-node/@latest/index.md
+    - page: ./discovery-node/@latest/discovery-node-redocly-openapi.yaml
+- group: Discovery Python API
+  items:
+    - page: ./discovery-python/@latest/index.md
+    - page: ./discovery-python/@latest/discovery-python-redocly-openapi.yaml

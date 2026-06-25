@@ -85,5 +85,5 @@ Every API call requires these headers:
 
 ## Next steps
 
-- Read the [API Reference](/apis/openapi.yaml) for all endpoints, schemas, and code examples.
-- See the [API Reference](/apis/openapi.yaml) for complete endpoint schemas and examples.
+- Read the [API Reference](/apis/sample-api/@v1.0/openapi.yaml) for all endpoints, schemas, and code examples.
+- See the [API Reference](/apis/sample-api/@v1.0/openapi.yaml) for complete endpoint schemas and examples.

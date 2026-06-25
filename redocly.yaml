@@ -26,7 +26,7 @@ navbar:
     - label: Guides
       page: docs/guides/index.md
     - label: API Reference
-      page: apis/openapi.yaml
+      page: apis/index.md
     - label: About
       page: about.md
 
@@ -36,7 +36,7 @@ navbar:
 # This is useful for lint and scorecard checks, and for generating the API Reference sidebar.
 apis:
   payment-services@v1.0:
-    root: ./apis/openapi.yaml
+    root: ./apis/sample-api/@v1.0/openapi.yaml
   discovery-node@v1.0:
     root: https://raw.githubusercontent.com/fanpay/discovery-node-redocly/main/openapi/openapi.yaml
   discovery-python@v1.0:

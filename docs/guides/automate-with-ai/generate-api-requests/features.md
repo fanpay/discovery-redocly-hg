@@ -7,7 +7,7 @@ description: Full reference for AI agents — all endpoint patterns, common payl
 
 ## Endpoint patterns
 
-_Content coming soon. See [/apis/openapi.yaml](/apis/openapi.yaml) for the full machine-readable spec._
+_Content coming soon. See [/apis/openapi.yaml](/apis/sample-api/@v1.0/openapi.yaml) for the full machine-readable spec._
 
 ## Common error response shape
 
@@ -24,4 +24,4 @@ _Content coming soon. See [/apis/openapi.yaml](/apis/openapi.yaml) for the full 
 
 ### Where are all the available endpoints documented?
 
-In the OpenAPI spec at [/apis/openapi.yaml](/apis/openapi.yaml), or via the MCP server at `/mcp`.
+In the OpenAPI spec at [/apis/openapi.yaml](/apis/sample-api/@v1.0/openapi.yaml), or via the MCP server at `/mcp`.

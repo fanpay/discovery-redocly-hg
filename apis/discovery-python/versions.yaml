@@ -1,0 +1,4 @@
+default: latest
+versions:
+  - version: latest
+    name: Latest version (suggested)

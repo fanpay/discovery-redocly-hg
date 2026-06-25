@@ -16,7 +16,7 @@ Internal tooling and operational guides for teams managing the Payment Services 
 
 ### Where are the API specs for internal tooling?
 
-The full OpenAPI spec is at [/apis/openapi.yaml](/apis/openapi.yaml). Internal operations use the same API surface as external developers.
+The full OpenAPI spec is at [/apis/openapi.yaml](/apis/sample-api/@v1.0/openapi.yaml). Internal operations use the same API surface as external developers.
 
 ### How do I set up monitoring alerts?
 

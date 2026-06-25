@@ -24,4 +24,4 @@ Always start in the [Sandbox](../global/sandbox.md). Sandbox credentials only wo
 
 ### Is there an OpenAPI spec I can import into my tools?
 
-Yes — the full spec is available at [/apis/openapi.yaml](/apis/openapi.yaml). It is importable into Postman, Insomnia, and any OpenAPI-compatible tool.
+Yes — the full spec is available at [/apis/openapi.yaml](/apis/sample-api/@v1.0/openapi.yaml). It is importable into Postman, Insomnia, and any OpenAPI-compatible tool.
