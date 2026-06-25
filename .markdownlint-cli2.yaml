@@ -22,6 +22,7 @@ ignores:
   - "node_modules"
   - ".claude"
   - "@theme"
+  - "docs/**/sample-invalid-*.md"
 
 # Rule overrides. Start permissive; tighten as the docs mature.
 config:
