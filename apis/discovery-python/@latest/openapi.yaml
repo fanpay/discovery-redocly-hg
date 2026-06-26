@@ -398,12 +398,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-  /hello:
+  /health:
     get:
       tags:
       - Health
       summary: Hello endpoint
-      operationId: hello_hello_get
+      operationId: hello_health_get
       responses:
         '200':
           description: Successful Response
