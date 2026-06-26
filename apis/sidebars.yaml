@@ -20,4 +20,3 @@
     - page: ./discovery-python/@latest/index.md
     - page: ./discovery-python/@latest/discovery-python-redocly-openapi.yaml
     - page: ./discovery-python/@test-push/index.md
-    - page: ./discovery-python/@test-push/discovery-python-redocly-openapi.yaml
