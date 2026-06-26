@@ -1,4 +1,6 @@
 default: latest
 versions:
+  - version: test-push
+    name: Version Test Push
   - version: latest
     name: Latest version (suggested)
