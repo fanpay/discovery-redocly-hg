@@ -21,12 +21,32 @@ extends:
 ignore:
   - 'docs/examples/sample-invalid-*.md'
 
+# --- Navbar -------------------------------------------------------------------
+# The default theme allows ONE level of grouping: a top-level `group` may hold
+# leaf links via `items`, but those items cannot themselves be groups (no
+# nested dropdowns). Top-level entries can be plain links or single-level groups.
 navbar:
   items:
+    # Level 1 — plain top-level link
     - label: Guides
       page: docs/guides/index.md
-    - label: API Reference
-      page: apis/index.md
+
+    # Level 1 group -> Level 2 leaf links (the only supported nesting)
+    - group: API Reference
+      icon: code
+      items:
+        - label: Payment Services
+          page: apis/index.md
+        - label: Discovery Node
+          page: apis/index.md
+        - label: Discovery Python
+          page: apis/index.md
+
+    # Level 1 — external link
+    - label: Redocly Docs
+      href: https://redocly.com/docs
+      external: true
+
     - label: About
       page: about.md
 
